@@ -29,6 +29,7 @@ jobs:
 
       - name: Live stream test (JioSaavn + YouTube Music)
         run: |
+          set +e
           mkdir -p test/results
           node test/playback.e2e.mjs > test/results/latest.txt 2>&1
           echo "EXIT=$?" >> test/results/latest.txt

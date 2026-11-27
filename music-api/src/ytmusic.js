@@ -137,25 +137,28 @@ function shelfItems(shelf) {
   return out;
 }
 
-/** search response -> { tracks, albums, playlists, artists } shelf-wise */
+/** search response -> { tracks, albums, playlists, artists }
+    2026 layout: sections itemSectionRenderer/musicCardShelfRenderer hain,
+    shelf-wise grouping reliable nahi — poori tree walk karke har
+    list/two-row item ko kind se classify karo. */
 export function parseSearchResponse(json) {
-  const empty = { tracks: [], albums: [], playlists: [], artists: [] };
-  const contents = json?.contents?.tabbedSearchResultsRenderer?.tabs?.[0]?.tabRenderer?.content
-    ?.sectionListRenderer?.contents || [];
-  const out = { ...empty };
-  for (const section of contents) {
-    const shelf = section.musicShelfRenderer;
-    if (!shelf) continue;
-    const shelfTitle = (runsText(shelf.title?.runs) || '').toLowerCase();
-    const items = shelfItems(shelf);
-    if (shelfTitle.includes('song')) out.tracks.push(...items.filter(i => i.kind === 'track'));
-    else if (shelfTitle.includes('album')) out.albums.push(...items.filter(i => i.kind === 'album'));
-    else if (shelfTitle.includes('playlist')) out.playlists.push(...items.filter(i => i.kind === 'playlist'));
-    else if (shelfTitle.includes('artist')) out.artists.push(...items.filter(i => i.kind === 'artist'));
-    else {
-      for (const i of items) out[{ track: 'tracks', album: 'albums', playlist: 'playlists', artist: 'artists' }[i.kind]]?.push(i);
+  const out = { tracks: [], albums: [], playlists: [], artists: [] };
+  const seen = new Set();
+  const bucket = { track: 'tracks', album: 'albums', playlist: 'playlists', artist: 'artists' };
+  const push = (item) => {
+    if (!item || seen.has(item.id)) return;
+    seen.add(item.id);
+    out[bucket[item.kind]]?.push(item);
+  };
+  const walk = (node, depth) => {
+    if (!node || typeof node !== 'object' || depth > 14) return;
+    if (node.musicResponsiveListItemRenderer || node.musicTwoRowItemRenderer) {
+      push(parseListItem(node) || parseTwoRowItem(node));
+      return;
     }
-  }
+    for (const v of Object.values(node)) walk(v, depth + 1);
+  };
+  walk(json?.contents, 0);
   return out;
 }
 

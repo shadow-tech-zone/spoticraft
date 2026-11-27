@@ -1,0 +1,12 @@
+── YT search raw ("Arijit Singh") ──
+top keys: responseContext,contents,trackingParams
+$.contents.tabbedSearchResultsRenderer
+$.contents.tabbedSearchResultsRenderer.tabs.0.tabRenderer
+$.contents.tabbedSearchResultsRenderer.tabs.0.tabRenderer.content.sectionListRenderer contents=30
+
+── ytmusic.search() parsed ──
+tracks=0 albums=0 playlists=0 artists=0
+
+── known video stream test (dQw4w9WgXcQ) ──
+streams=5 top=137kbps rr1---sn-p5qs7nd7.googlevideo.com
+bytes: HTTP 206 type=audio/webm n=1024

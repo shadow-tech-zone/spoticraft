@@ -80,7 +80,9 @@ public:
         return S_OK;
     }
     HRESULT STDMETHODCALLTYPE GetCurrentFontFile(IDWriteFontFile** file) override {
-        return m_factory->CreateCustomFontFileReference(&m_pos, sizeof(int),
+        /* keys hamesha stable addresses par (DWrite copy kare ya reference rakhe) */
+        static const int kKeys[] = {0, 1, 2, 3, 4};
+        return m_factory->CreateCustomFontFileReference(&kKeys[m_pos], sizeof(int),
             reinterpret_cast<IDWriteFontFileLoader*>(g_embeddedLoader()), file);
     }
     static MemFontLoader* g_embeddedLoader();  /* neeche defined singleton ka access */
@@ -143,6 +145,26 @@ bool Renderer::Init(HWND hwnd) {
         UINT32 idx = 0; BOOL exists = FALSE;
         m_embeddedFonts->FindFamilyName(L"Montserrat", &idx, &exists);
         if (!exists) { m_embeddedFonts->Release(); m_embeddedFonts = nullptr; }
+    }
+    if (m_embeddedFonts) {
+        /* weights dobara check — koi face missing ho to log bata dega */
+        IDWriteFontFamily* fam = nullptr;
+        UINT32 idx = 0; BOOL ex = FALSE;
+        m_embeddedFonts->FindFamilyName(L"Montserrat", &idx, &ex);
+        std::string diag = "fonts: embedded Montserrat OK, weights:";
+        if (ex && SUCCEEDED(m_embeddedFonts->GetFontFamily(idx, &fam))) {
+            for (int w : {400, 600, 700, 800, 900}) {
+                IDWriteFont* f = nullptr;
+                if (SUCCEEDED(fam->GetFirstMatchingFont((DWRITE_FONT_WEIGHT)w, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL, &f))) {
+                    diag += " " + std::to_string(w);
+                    f->Release();
+                }
+            }
+            fam->Release();
+        }
+        LogLine(diag);
+    } else {
+        LogLine("fonts: embedded Montserrat NAHI mila — system fallback font chal raha hai!");
     }
     return true;
 }
@@ -312,20 +334,18 @@ void Renderer::PreloadImage(const std::string& url) {
     if (e.state != 0) return;
     e.state = 1;
     std::string u = url;
-    RunAsync([this, u] {
-        std::vector<uint8_t> bytes;
-        if (net::GetBytes(u, bytes) && !bytes.empty()) {
-            auto& entry = m_images[u];
-            entry.raw = new uint8_t[bytes.size()];
-            memcpy((void*)entry.raw, bytes.data(), bytes.size());
-            entry.rawSize = bytes.size();
-        }
-    }, [this, u] {
-        auto it = m_images.find(u);
-        if (it != m_images.end() && it->second.raw) it->second.state = 2;
-        else if (it != m_images.end()) it->second.state = 3;
-        Redraw();
-    });
+    RunAsync([u] {
+        auto* msg = new ImgMsg{u, {}, false};
+        msg->ok = net::GetBytes(u, msg->bytes) && !msg->bytes.empty();
+        PostMessageW(g_mainWnd, WM_APP_IMG, (WPARAM)msg, 0);
+    }, [] {});
+}
+
+void Renderer::AcceptImage(const std::string& url, std::vector<uint8_t> bytes) {
+    auto& e = m_images[url];
+    if (!bytes.empty()) { e.bytes = std::move(bytes); e.state = 2; }
+    else e.state = 3;
+    Redraw();
 }
 
 ID2D1Bitmap* Renderer::GetImage(const std::string& url) {
@@ -333,9 +353,10 @@ ID2D1Bitmap* Renderer::GetImage(const std::string& url) {
     auto it = m_images.find(url);
     if (it == m_images.end()) { PreloadImage(url); return nullptr; }
     auto& e = it->second;
-    if (e.state == 2 && e.raw) {
-        e.bmp = BitmapFromMemory(e.raw, e.rawSize);
-        delete[] e.raw; e.raw = nullptr; e.rawSize = 0;
+    if (e.state == 2 && !e.bytes.empty()) {
+        e.bmp = BitmapFromMemory(e.bytes.data(), e.bytes.size());
+        e.bytes.clear();
+        e.bytes.shrink_to_fit();
         e.state = e.bmp ? 4 : 3;
     }
     return e.state == 4 ? e.bmp : nullptr;
@@ -422,11 +443,27 @@ void Renderer::IconHeart(const DRect& r, const D2D1_COLOR_F& c, bool filled) {
         {cx - s * 0.45f, cy - s * 1.05f}, {cx, cy - s * 0.45f}, {cx + s * 0.45f, cy - s * 1.05f},
         {cx + s * 1.05f, cy - s * 0.75f}, {cx + s * 1.15f, cy - s * 0.05f}};
     if (filled) { FillPath(*this, heart, c); return; }
-    /* outline: 2 arc-circles + V lines */
-    EllipseStroke(cx - s * 0.55f, cy - s * 0.55f, s * 0.52f, s * 0.52f, 1.6f, c);
-    EllipseStroke(cx + s * 0.55f, cy - s * 0.55f, s * 0.52f, s * 0.52f, 1.6f, c);
-    Line(*this, cx - s * 1.05f, cy - s * 0.35f, cx, cy + s * 1.05f, 1.6f, c);
-    Line(*this, cx + s * 1.05f, cy - s * 0.35f, cx, cy + s * 1.05f, 1.6f, c);
+    /* outline: wohi dil wali path stroke ke saath */
+    ID2D1Factory* f = nullptr;
+    RT()->GetFactory(&f);
+    if (!f) return;
+    ID2D1PathGeometry* geo = nullptr;
+    f->CreatePathGeometry(&geo);
+    ID2D1GeometrySink* sink = nullptr;
+    geo->Open(&sink);
+    /* lobes quadratic beziers se smooth */
+    sink->BeginFigure(D2D1::Point2F(cx, cy + s * 1.05f), D2D1_FIGURE_BEGIN_HOLLOW);
+    sink->AddQuadraticBezier(D2D1::QuadraticBezierSegment(D2D1::Point2F(cx - s * 1.25f, cy - s * 0.30f), D2D1::Point2F(cx - s * 0.60f, cy - s * 0.85f)));
+    sink->AddQuadraticBezier(D2D1::QuadraticBezierSegment(D2D1::Point2F(cx - s * 0.25f, cy - s * 1.08f), D2D1::Point2F(cx, cy - s * 0.48f)));
+    sink->AddQuadraticBezier(D2D1::QuadraticBezierSegment(D2D1::Point2F(cx + s * 0.25f, cy - s * 1.08f), D2D1::Point2F(cx + s * 0.60f, cy - s * 0.85f)));
+    sink->AddQuadraticBezier(D2D1::QuadraticBezierSegment(D2D1::Point2F(cx + s * 1.25f, cy - s * 0.30f), D2D1::Point2F(cx, cy + s * 1.05f)));
+    sink->EndFigure(D2D1_FIGURE_END_CLOSED);
+    sink->Close(); sink->Release();
+    ID2D1SolidColorBrush* b = nullptr;
+    RT()->CreateSolidColorBrush(c, &b);
+    if (b) { RT()->DrawGeometry(geo, b, 1.6f); b->Release(); }
+    geo->Release();
+    f->Release();
 }
 void Renderer::IconVolume(const DRect& r, const D2D1_COLOR_F& c, bool muted) {
     float cx = r.left + W(r) * 0.38f, cy = (r.top + r.bottom) / 2;

@@ -108,9 +108,10 @@ public:
     void IconArtist(const DRect& r, const D2D1_COLOR_F& c);
     void IconPlayingWave(const DRect& r, const D2D1_COLOR_F& c, float phase);
 
-    /* image cache: url -> bitmap (async load) */
+    /* image cache: url -> bitmap (async load; saari map access UI thread par) */
     ID2D1Bitmap* GetImage(const std::string& url);
     void PreloadImage(const std::string& url);
+    void AcceptImage(const std::string& url, std::vector<uint8_t> bytes);
     void Invalidate() { Redraw(); }
     void Redraw();
 
@@ -129,9 +130,13 @@ private:
     IDWriteFontCollection* m_embeddedFonts = nullptr;
     int m_w = 0, m_h = 0;
 
-    struct ImgEntry { int state = 0; ID2D1Bitmap* bmp = nullptr; std::string url; const uint8_t* raw = nullptr; size_t rawSize = 0; };
+    struct ImgEntry { int state = 0; ID2D1Bitmap* bmp = nullptr; std::vector<uint8_t> bytes; };
     std::unordered_map<std::string, ImgEntry> m_images;
 };
+
+/* image bytes worker -> UI completion message */
+constexpr UINT WM_APP_IMG = WM_APP + 43;
+struct ImgMsg { std::string url; std::vector<uint8_t> bytes; bool ok = false; };
 
 extern Renderer g_ui;
 std::wstring AppDataPath(const wchar_t* name);

@@ -265,7 +265,7 @@ static void PaintTrackRow(const DRect& row, const Track& t, int idx, bool showAl
     float ax = tx;
     if (t.explicit_) { g_ui.IconExplicit(R(ax, row.top + 27, ax + 16, row.top + 43), color::textSubdued); ax += 21; }
     g_ui.Text(t.ArtistText(), R(ax, row.top + 27, row.right - 220, row.top + 45), 12, TW::Regular, color::textSubdued);
-    if (showAlbum) {
+    if (showAlbum && W(row) > 700) {
         float mid = row.left + W(row) * 0.52f;
         g_ui.Text(t.albumTitle, R(mid, row.top + 14, row.right - 130, row.top + 36), 13, TW::Regular, color::textSubdued);
     }
@@ -1395,6 +1395,12 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
             g_hwnd = hwnd;
             g_mainWnd = hwnd;
             if (!g_ui.Init(hwnd)) { MessageBoxW(hwnd, L"Direct2D init fail", L"Bloomee", MB_ICONERROR); return -1; }
+            {
+                RECT rc; GetClientRect(hwnd, &rc);
+                UINT dpi = GetDpiForWindow(hwnd);
+                LogLine("startup: client=" + std::to_string(rc.right) + "x" + std::to_string(rc.bottom) +
+                        " dpi=" + std::to_string(dpi) + " (96=100%)");
+            }
             CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, __uuidof(IWICImagingFactory), (void**)&g_wic);
             Lib().Load();
             g_player.Init();
@@ -1636,6 +1642,11 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
             return 0;
         }
         case WM_APP_JOB: Jobs().Drain(); return 0;
+        case WM_APP_IMG: {
+            std::unique_ptr<ImgMsg> msg((ImgMsg*)wp);
+            if (msg) g_ui.AcceptImage(msg->url, msg->ok ? std::move(msg->bytes) : std::vector<uint8_t>());
+            return 0;
+        }
         case WM_APP_PLAYER: {
             if (wp == 1) { g.playing = true; g.paused = false; g.buffering = false; }
             else if (wp == 2) {
@@ -1851,10 +1862,10 @@ static void PaintTitleBar(const DRect& area) {
     g_ui.FillRounded(g_searchRect, 16, color::subdued);
     g_ui.IconSearch(R(g_searchRect.left + 8, area.top + 13, g_searchRect.left + 30, area.top + 35), color::textSubdued);
     AddZone(g_searchRect, Z_SEARCH_INPUT, 16);
-    /* settings gear-ish (menu) */
-    DRect st = R(area.right - 150, area.top + 10, area.right - 122, area.top + 38);
+    /* settings menu button — window controls se clear gap par */
+    DRect st = R(area.right - 184, area.top + 12, area.right - 152, area.top + 36);
     g_ui.IconMore(st, g.hoverZone == Z_ACTION_SETTINGS ? color::textBase : color::textSubdued);
-    AddZone(R(area.right - 156, area.top + 4, area.right - 116, area.top + 44), Z_ACTION_SETTINGS, 14);
+    AddZone(R(area.right - 190, area.top + 6, area.right - 146, area.top + 42), Z_ACTION_SETTINGS, 14);
     /* window controls (46x full height, study §8) */
     struct WCDef { int zone; };
     float cx = area.right;

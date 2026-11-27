@@ -1,0 +1,26 @@
+name: Live Playback Test
+
+# Asal network par stream resolution ka test.
+# Sandbox se music sites block hain, is liye ye runner hi test machine hai.
+on:
+  push:
+    branches:
+      - arena/09cac133-spoticraft
+    paths:
+      - 'test/**'
+      - 'app/core/**'
+      - '.github/workflows/test-playback.yml'
+
+jobs:
+  stream-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Live stream test (JioSaavn + YouTube Music)
+        run: node test/playback.e2e.mjs

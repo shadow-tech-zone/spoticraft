@@ -214,6 +214,7 @@ const PLAYER_CLIENTS = [
 async function streamsFor(videoId) {
   let baseJs = null;
   const attempts = [];
+  let loginFails = 0;
   for (const client of PLAYER_CLIENTS) {
     try {
       const body = {
@@ -229,7 +230,13 @@ async function streamsFor(videoId) {
         body: JSON.stringify(body),
       });
       const sd = json?.streamingData;
-      if (!sd) { attempts.push(`${client.clientName}:${json?.playabilityStatus?.status || 'no_data'} ${json?.playabilityStatus?.reason || ''}`.trim()); continue; }
+      if (!sd) {
+        attempts.push(`${client.clientName}:${json?.playabilityStatus?.status || 'no_data'} ${json?.playabilityStatus?.reason || ''}`.trim());
+        /* bot-check IP-level hota hai — 2 clients ke baad baqi bhi wahi
+           kahenge; waqt zaya na karo, rescue ko mauqa do */
+        if (json?.playabilityStatus?.status === 'LOGIN_REQUIRED' && ++loginFails >= 2) break;
+        continue;
+      }
       const formats = [...(sd.formats || []), ...(sd.adaptiveFormats || [])]
         .filter(f => (f.mimeType || '').startsWith('audio/'))
         .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));

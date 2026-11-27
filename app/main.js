@@ -13,6 +13,8 @@ import { resolveStreams } from './core/resolve.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = !app.isPackaged;
+const SMOKE = !!process.env.BLOOMEE_SMOKE;
+if (SMOKE) app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 /* ── log: userData/bloomee.log ── */
 let logStream = null;
@@ -86,7 +88,47 @@ function createWindow() {
     }
   });
   win.on('closed', () => { win = null; });
-  if (isDev) win.webContents.openDevTools({ mode: 'detach' });
+  if (isDev && !SMOKE) win.webContents.openDevTools({ mode: 'detach' });
+  if (SMOKE) win.webContents.once('did-finish-load', () => setTimeout(() => runSmoke(win), 600));
+}
+
+/* ── CI smoke test: asal app + asal IPC + asal Chromium <audio> ──
+   Dono sources ke gaane play karke duration/currentTime verify. */
+async function runSmoke(w) {
+  const code = `(async () => {
+    const unwrap = (p) => p.then(x => { if (!x || !x.ok) throw new Error((x && x.error) || 'ipc fail'); return x.data; });
+    const play = async (url) => {
+      const a = new Audio();
+      const ready = new Promise((res, rej) => {
+        const to = setTimeout(() => rej(new Error('canplay timeout')), 30000);
+        a.addEventListener('canplay', () => { clearTimeout(to); res(); }, { once: true });
+        a.addEventListener('error', () => { clearTimeout(to); rej(new Error('audio error code=' + (a.error && a.error.code))); }, { once: true });
+      });
+      a.src = url;
+      await ready;
+      await a.play();
+      const t0 = a.currentTime;
+      await new Promise(r => setTimeout(r, 3500));
+      return { duration: Math.round(a.duration || 0), t0: +t0.toFixed(2), t1: +a.currentTime.toFixed(2), paused: a.paused };
+    };
+    const out = {};
+    const s1 = await unwrap(window.bloomee.api.search('jiosaavn', 'Arijit Singh', 'track', 1));
+    const st1 = await unwrap(window.bloomee.api.streams(s1.items[0]));
+    out.saavn = { title: s1.items[0].title, via: st1.via, ...(await play(st1.streams[0].url)) };
+    const s2 = await unwrap(window.bloomee.api.search('ytmusic', 'Arijit Singh', 'track', 1));
+    const st2 = await unwrap(window.bloomee.api.streams(s2.items[0]));
+    out.ytm = { title: s2.items[0].title, via: st2.via, ...(await play(st2.streams[0].url)) };
+    out.ok = [out.saavn, out.ytm].every(p => p.duration > 30 && p.t1 > p.t0 && !p.paused);
+    return out;
+  })()`;
+  try {
+    const res = await w.webContents.executeJavaScript(code, true);
+    console.log('SMOKE_RESULT ' + JSON.stringify(res));
+    app.exit(res?.ok ? 0 : 1);
+  } catch (e) {
+    console.log('SMOKE_RESULT ' + JSON.stringify({ ok: false, error: String(e?.message || e) }));
+    app.exit(1);
+  }
 }
 
 function showWindow() {

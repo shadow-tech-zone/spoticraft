@@ -41,16 +41,28 @@ jobs:
           echo "----- RESCUE -----"
           cat test/results/rescue.txt
 
+      - name: Electron smoke (asal app, asal <audio> playback)
+        run: |
+          set +e
+          sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgtk-3-0 libnss3 libasound2t64 > /dev/null 2>&1
+          (cd app && npm install --no-audit --no-fund > /dev/null 2>&1)
+          (cd app && BLOOMEE_SMOKE=1 xvfb-run -a npx electron . --no-sandbox --disable-gpu > ../smoke-out.txt 2>&1)
+          grep -o 'SMOKE_RESULT .*' smoke-out.txt | tail -1 | sed 's/^SMOKE_RESULT //' > test/results/smoke.txt
+          echo "----- SMOKE -----"
+          cat test/results/smoke.txt
+
       - name: Commit results
         if: always()
         run: |
           git config user.name "bloomee-ci"
           git config user.email "ci@bloomee.local"
-          git add test/results/latest.txt test/results/yt-debug.txt test/results/rescue.txt
+          git add test/results/latest.txt test/results/yt-debug.txt test/results/rescue.txt test/results/smoke.txt
           git commit -m "test results [skip ci]" || echo "nothing new"
           git pull --rebase origin arena/09cac133-spoticraft || true
           git push origin HEAD:arena/09cac133-spoticraft
 
-      - name: Fail job if APP-PATH test failed
+      - name: Fail job if tests failed
         if: always()
-        run: grep -q "ALL PASS" test/results/rescue.txt
+        run: |
+          grep -q "ALL PASS" test/results/rescue.txt
+          grep -q '"ok":true' test/results/smoke.txt

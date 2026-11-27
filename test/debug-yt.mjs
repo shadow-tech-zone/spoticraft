@@ -34,9 +34,21 @@ console.log('── YT search raw ("Arijit Singh") ──');
 try {
   const json = await innertube('search', { query: 'Arijit Singh' });
   console.log('top keys:', Object.keys(json).join(','));
-  const out = [];
-  walk(json, '$', 0, out);
-  console.log(out.slice(0, 40).join('\n') || '(koi renderer nahi mila)');
+  const sections = json?.contents?.tabbedSearchResultsRenderer?.tabs?.[0]?.tabRenderer?.content
+    ?.sectionListRenderer?.contents || [];
+  console.log(`sections=${sections.length}`);
+  sections.forEach((s, i) => {
+    const keys = Object.keys(s);
+    const shelf = s.musicShelfRenderer;
+    const title = shelf?.title?.runs?.map(r => r.text).join('') || '';
+    console.log(`  [${i}] ${keys.join('+')}${shelf ? ` title="${title}" items=${shelf.contents?.length}` : ''}`);
+  });
+  const firstShelf = sections.find(s => s.musicShelfRenderer);
+  if (firstShelf) {
+    const item = firstShelf.musicShelfRenderer.contents?.[0];
+    console.log('first shelf item keys:', item ? Object.keys(item).join(',') : '(none)');
+    console.log('first item JSON (1200 chars):', JSON.stringify(item).slice(0, 1200));
+  }
 } catch (e) { console.log('search HTTP error:', e.message); }
 
 console.log('\n── ytmusic.search() parsed ──');

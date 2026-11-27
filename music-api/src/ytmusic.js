@@ -205,6 +205,8 @@ const PLAYER_CLIENTS = [
   { clientName: 'IOS', clientVersion: '20.10.4', userAgent: 'com.google.ios.youtube/20.10.4 (iPhone16,2; U; CPU iOS 18_3_2 like Mac OS X;)', deviceMake: 'Apple', deviceModel: 'iPhone16,2', osName: 'iPhone', osVersion: '18.3.2.22D82' },
   { clientName: 'ANDROID_VR', clientVersion: '1.65.10', userAgent: 'com.google.android.apps.youtube.vr.oculus/1.65.10 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip', androidSdkVersion: 32, osName: 'Android', osVersion: '12L' },
   { clientName: 'ANDROID', clientVersion: '20.10.1', userAgent: 'com.google.android.youtube/20.10.1 (Linux; U; Android 14; en_US) gzip', androidSdkVersion: 34, osName: 'Android', osVersion: '14' },
+  { clientName: 'TVHTML5_SIMPLY', clientVersion: '1.0', userAgent: 'Mozilla/5.0 (SMART-TV; Linux; Tizen 6.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36' },
+  { clientName: 'WEB_REMIX', clientVersion: '1.20260222.01.00', userAgent: UA_DESKTOP, origin: 'https://music.youtube.com' },
   { clientName: 'WEB_EMBEDDED_PLAYER', clientVersion: '1.20260101.01.00', userAgent: UA_DESKTOP, thirdParty: { embedUrl: 'https://www.youtube.com/' } },
   { clientName: 'TVHTML5', clientVersion: '7.20250205.16.00', userAgent: 'Mozilla/5.0 (SMART-TV; Linux; Tizen 6.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36' },
 ];
@@ -223,7 +225,7 @@ async function streamsFor(videoId) {
       };
       const json = await fetchJson('https://www.youtube.com/youtubei/v1/player?key=' + API_KEY + '&prettyPrint=false', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', 'user-agent': client.userAgent, origin: 'https://www.youtube.com' },
+        headers: { 'content-type': 'application/json', 'user-agent': client.userAgent, origin: client.origin || 'https://www.youtube.com', referer: `${client.origin || 'https://www.youtube.com'}/` },
         body: JSON.stringify(body),
       });
       const sd = json?.streamingData;

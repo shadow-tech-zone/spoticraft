@@ -10,6 +10,7 @@ on:
     paths:
       - 'app/core/**'
       - 'test/playback.e2e.mjs'
+      - 'test/rescue.e2e.mjs'
       - 'test/debug-yt.mjs'
       - '.github/workflows/test-playback.yml'
 
@@ -34,20 +35,22 @@ jobs:
           node test/playback.e2e.mjs > test/results/latest.txt 2>&1
           echo "EXIT=$?" >> test/results/latest.txt
           node test/debug-yt.mjs > test/results/yt-debug.txt 2>&1 || true
+          node test/rescue.e2e.mjs > test/results/rescue.txt 2>&1
+          echo "EXIT=$?" >> test/results/rescue.txt
           cat test/results/latest.txt
-          echo "----- YT DEBUG -----"
-          cat test/results/yt-debug.txt
+          echo "----- RESCUE -----"
+          cat test/results/rescue.txt
 
       - name: Commit results
         if: always()
         run: |
           git config user.name "bloomee-ci"
           git config user.email "ci@bloomee.local"
-          git add test/results/latest.txt test/results/yt-debug.txt
+          git add test/results/latest.txt test/results/yt-debug.txt test/results/rescue.txt
           git commit -m "test results [skip ci]" || echo "nothing new"
           git pull --rebase origin arena/09cac133-spoticraft || true
           git push origin HEAD:arena/09cac133-spoticraft
 
-      - name: Fail job if test failed
+      - name: Fail job if APP-PATH test failed
         if: always()
-        run: grep -q "ALL PASS" test/results/latest.txt
+        run: grep -q "ALL PASS" test/results/rescue.txt

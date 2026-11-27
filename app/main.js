@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { jiosaavn } from './core/jiosaavn.js';
 import { ytmusic } from './core/ytmusic.js';
 import { getLyrics } from './core/lyrics.js';
+import { resolveStreams } from './core/resolve.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = !app.isPackaged;
@@ -139,36 +140,14 @@ function registerIpc() {
   };
   for (const [name, fn] of Object.entries(api)) ipcMain.handle(name, wrap(fn));
 
-  /* streams: primary source fail ho to doosre source par wahi gaana
-     dhoondh kar us ka stream — playback kabhi dead-end na ho */
+  /* streams: shared resolver (core/resolve.js) — primary fail par
+     doosre source se rescue; tamam attempts bloomee.log mein */
   ipcMain.handle('api:streams', async (_e, track) => {
-    const t = typeof track === 'string' ? { id: track } : (track || {});
-    const { src, local } = parse(t.id || '');
-    const primary = src === 'ytmusic' ? ytmusic : jiosaavn;
     try {
-      const streams = await primary.streams(local);
-      if (!streams?.length) throw new Error('empty stream list');
-      log('streams ok', src, local, `${streams.length} variants`);
-      return { ok: true, data: { streams, via: src } };
-    } catch (e1) {
-      log('streams primary fail', src, local, e1.message);
-      try {
-        const other = src === 'ytmusic' ? jiosaavn : ytmusic;
-        const q = [t.title, t.artists?.[0]?.name].filter(Boolean).join(' ').trim();
-        if (q) {
-          const res = await other.search(q, 'track', 1);
-          const cand = res?.items?.[0];
-          if (cand) {
-            const streams = await other.streams(parse(cand.id).local);
-            if (streams?.length) {
-              log('streams fallback ok', other.id, cand.id);
-              return { ok: true, data: { streams, via: `${other.id}-fallback`, matched: cand.title } };
-            }
-          }
-        }
-      } catch (e2) { log('streams fallback fail', e2.message); }
-      log('streams error', e1);
-      return { ok: false, error: e1.message || 'stream resolve fail' };
+      return { ok: true, data: await resolveStreams(track, log) };
+    } catch (err) {
+      log('streams error', err);
+      return { ok: false, error: err.message || 'stream resolve fail' };
     }
   });
 

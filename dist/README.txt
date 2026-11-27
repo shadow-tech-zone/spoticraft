@@ -1,4 +1,4 @@
-Bloomee v0.2.0 — Electron Desktop App (Windows)
+Bloomee v0.2.1 — Electron Desktop App (Windows)
 ================================================
 
 Ye naya build hai — purana C++/Direct2D wala build hata diya gaya hai.
@@ -7,12 +7,12 @@ gaya: Spotify khud bhi Chromium UI hi use karta hai.
 
 DOWNLOAD (GitHub Actions artifact)
 ----------------------------------
-1. Ye run kholo:
-   https://github.com/shadow-tech-zone/spoticraft/actions/runs/46049045331
+1. Saare builds ki list kholo (sab se upar wala run = latest):
+   https://github.com/shadow-tech-zone/spoticraft/actions/workflows/build-windows.yml
 2. Neeche "Artifacts" mein "Bloomee-Windows" download karo (zip, ~221MB)
 3. Zip kholo, do files milengi:
-   - Bloomee-Setup-0.2.0.exe      → installer (Start menu shortcut ke saath)
-   - Bloomee-Portable-0.2.0.exe   → bina install, direct chalne wala
+   - Bloomee-Setup-0.2.1.exe      → installer (Start menu shortcut ke saath)
+   - Bloomee-Portable-0.2.1.exe   → bina install, direct chalne wala
 
 Unsigned app hai — Windows SmartScreen aaye to
 "More info" → "Run anyway" dabana.

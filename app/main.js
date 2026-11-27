@@ -124,7 +124,6 @@ function registerIpc() {
     'api:search': (src, q, filter, page) => srcImpl(src).search(q, filter || 'all', page || 1),
     'api:suggestions': (src, q) => srcImpl(src).suggestions(q),
     'api:track': (id) => route(id).trackDetails(parse(id).local),
-    'api:streams': (id) => route(id).streams(parse(id).local),
     'api:album': (id) => route(id).albumDetails(parse(id).local),
     'api:playlist': (id) => route(id).playlistDetails(parse(id).local),
     'api:artist': (id) => route(id).artistDetails(parse(id).local),
@@ -139,6 +138,39 @@ function registerIpc() {
     }),
   };
   for (const [name, fn] of Object.entries(api)) ipcMain.handle(name, wrap(fn));
+
+  /* streams: primary source fail ho to doosre source par wahi gaana
+     dhoondh kar us ka stream — playback kabhi dead-end na ho */
+  ipcMain.handle('api:streams', async (_e, track) => {
+    const t = typeof track === 'string' ? { id: track } : (track || {});
+    const { src, local } = parse(t.id || '');
+    const primary = src === 'ytmusic' ? ytmusic : jiosaavn;
+    try {
+      const streams = await primary.streams(local);
+      if (!streams?.length) throw new Error('empty stream list');
+      log('streams ok', src, local, `${streams.length} variants`);
+      return { ok: true, data: { streams, via: src } };
+    } catch (e1) {
+      log('streams primary fail', src, local, e1.message);
+      try {
+        const other = src === 'ytmusic' ? jiosaavn : ytmusic;
+        const q = [t.title, t.artists?.[0]?.name].filter(Boolean).join(' ').trim();
+        if (q) {
+          const res = await other.search(q, 'track', 1);
+          const cand = res?.items?.[0];
+          if (cand) {
+            const streams = await other.streams(parse(cand.id).local);
+            if (streams?.length) {
+              log('streams fallback ok', other.id, cand.id);
+              return { ok: true, data: { streams, via: `${other.id}-fallback`, matched: cand.title } };
+            }
+          }
+        }
+      } catch (e2) { log('streams fallback fail', e2.message); }
+      log('streams error', e1);
+      return { ok: false, error: e1.message || 'stream resolve fail' };
+    }
+  });
 
   ipcMain.handle('lib:get', () => store.data);
   ipcMain.handle('lib:op', (_e, op, payload = {}) => {

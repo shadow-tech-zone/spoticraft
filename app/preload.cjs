@@ -9,7 +9,7 @@ contextBridge.exposeInMainWorld('bloomee', {
     search: (src, q, filter, page) => call('api:search', src, q, filter, page),
     suggestions: (src, q) => call('api:suggestions', src, q),
     track: (id) => call('api:track', id),
-    streams: (id) => call('api:streams', id),
+    streams: (track) => call('api:streams', track),
     album: (id) => call('api:album', id),
     playlist: (id) => call('api:playlist', id),
     artist: (id) => call('api:artist', id),

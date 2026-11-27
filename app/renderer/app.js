@@ -4,6 +4,8 @@ const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = (s = '') => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const artistsText = (t) => (t.artists || []).map(a => a.name).join(', ');
+/* core model artwork ko {url} object deta hai — yahan string banao */
+const artUrl = (o) => { const a = o?.artwork; return (typeof a === 'string' ? a : a?.url) || null; };
 const fmt = (ms) => { if (!ms && ms !== 0) return '0:00'; const s = Math.max(0, Math.round(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 
 const api = {};
@@ -86,11 +88,11 @@ function viewForItem(item) {
 }
 
 /* ════════════ shared fragments ════════════ */
-const coverImg = (item, cls = '') => item.artwork
-  ? `<img class="${cls}" src="${esc(item.artwork)}" alt="" loading="lazy" data-fb="c-tile ${cls}" data-ch="${esc((item.title || item.name || '?').slice(0, 1))}">`
+const coverImg = (item, cls = '') => artUrl(item)
+  ? `<img class="${cls}" src="${esc(artUrl(item))}" alt="" loading="lazy" data-fb="c-tile ${cls}" data-ch="${esc((item.title || item.name || '?').slice(0, 1))}">`
   : `<div class="c-tile ${cls}">${esc((item.title || item.name || '?').slice(0, 1))}</div>`;
-const rowCover = (t) => t.artwork
-  ? `<img src="${esc(t.artwork)}" alt="" loading="lazy" data-fb="t-tile" data-ch="${esc((t.title || '?').slice(0, 1))}">`
+const rowCover = (t) => artUrl(t)
+  ? `<img src="${esc(artUrl(t))}" alt="" loading="lazy" data-fb="t-tile" data-ch="${esc((t.title || '?').slice(0, 1))}">`
   : `<div class="t-tile">${esc((t.title || '?').slice(0, 1))}</div>`;
 
 /* image load fail → letter tile (CSP-safe, global capture) */
@@ -154,7 +156,7 @@ function renderSidebar() {
        <span class="lr-mid"><div class="lr-title">Liked Songs</div><div class="lr-sub">${S.lib.liked.length} songs</div></span>
      </button>`,
     ...S.lib.playlists.map(p => `<button class="librow ${v.kind === 'local' && v.id === p.id ? 'active' : ''}" data-act="open-local" data-id="${esc(p.id)}" data-menu-local="${esc(p.id)}">
-       ${p.tracks[0]?.artwork ? `<img src="${esc(p.tracks[0].artwork)}" alt="" data-fb="lr-tile" data-ch="♪">` : '<span class="lr-tile">♪</span>'}
+       ${artUrl(p.tracks[0]) ? `<img src="${esc(artUrl(p.tracks[0]))}" alt="" data-fb="lr-tile" data-ch="♪">` : '<span class="lr-tile">♪</span>'}
        <span class="lr-mid"><div class="lr-title">${esc(p.name)}</div><div class="lr-sub">Playlist • ${p.tracks.length} songs</div></span>
      </button>`),
   ];
@@ -286,7 +288,7 @@ async function pageList(el, v) {
   const meta = v.isAlbum
     ? `${d.year ? d.year + ' • ' : ''}${artistsText(d)} • ${tracks.length} songs`
     : `${d.author || (v.isChart ? 'Chart' : 'Playlist')} • ${tracks.length} songs`;
-  el.innerHTML = heroHTML({ kind: v.isAlbum ? 'Album' : 'Playlist', title: d.title, meta, artwork: d.artwork })
+  el.innerHTML = heroHTML({ kind: v.isAlbum ? 'Album' : 'Playlist', title: d.title, meta, artwork: artUrl(d) })
     + `<div class="actions"><button class="playfab" data-act="hero-play">▶</button></div>`
     + colHead + rowsHTML(tracks);
   applyHeroTint();
@@ -294,7 +296,7 @@ async function pageList(el, v) {
 }
 async function chartAsPlaylist(id) {
   const tracks = await api.chart(id);
-  return { id, title: S.view.title || 'Chart', artwork: tracks[0]?.artwork || null, author: 'Chart', tracks };
+  return { id, title: S.view.title || 'Chart', artwork: artUrl(tracks[0]), author: 'Chart', tracks };
 }
 
 async function pageArtist(el, v) {
@@ -304,7 +306,7 @@ async function pageArtist(el, v) {
   S.pageData = d;
   const tops = d.topTracks || d.tracks || [];
   const albums = d.albums || [];
-  el.innerHTML = heroHTML({ kind: 'Artist', title: d.name, meta: d.subtitle || 'Artist', artwork: d.artwork })
+  el.innerHTML = heroHTML({ kind: 'Artist', title: d.name, meta: d.subtitle || 'Artist', artwork: artUrl(d) })
     + `<div class="actions"><button class="playfab" data-act="hero-play">▶</button></div>`
     + (tops.length ? `<h2 class="sec-title">Popular</h2>${rowsHTML(tops)}` : '')
     + (albums.length ? `<h2 class="sec-title">Albums</h2><div class="cards">${albums.map(cardHTML).join('')}</div>` : '')
@@ -315,7 +317,7 @@ async function pageArtist(el, v) {
 
 function pageLocalList(el, title, tracks, opts) {
   const likedTile = !!opts.liked;
-  el.innerHTML = heroHTML({ kind: 'Playlist', title, meta: `${tracks.length} songs`, artwork: !likedTile && tracks[0]?.artwork, likedTile })
+  el.innerHTML = heroHTML({ kind: 'Playlist', title, meta: `${tracks.length} songs`, artwork: !likedTile && artUrl(tracks[0]), likedTile })
     + `<div class="actions"><button class="playfab" data-act="hero-play">▶</button>
        ${opts.localId ? `<button class="iconbtn" data-act="local-menu" data-id="${esc(opts.localId)}" title="More">•••</button>` : ''}</div>`
     + colHead
@@ -366,16 +368,16 @@ async function playAt(idx, autoplay = true) {
   renderNpLeft(); renderQueuePanel(); repaintPlayingRows();
   window.bloomee.playerState({ playing: false, title: `${t.title} — ${artistsText(t)}` });
   libOp('touchRecent', { track: t }).then(() => window.bloomee.lib.get().then(d => { S.lib = d; renderSidebar(); }));
-  let streams;
+  let res;
   try {
-    streams = await api.streams(t.id);
+    res = await api.streams(t);
   } catch (e) {
     if (gen !== S.streamGen) return;
-    toast(`Stream fail: ${e.message}`);
-    return maybeSkip('streamFail');
+    return maybeSkip('streamFail', e.message);
   }
   if (gen !== S.streamGen) return;
-  const list = streams?.streams || streams || [];
+  const list = res?.streams || [];
+  if (res?.via?.endsWith('fallback')) toast(`Stream ${res.via.replace('-fallback', '')} se mila — “${res.matched || t.title}”`, 3200);
   const url = pickStream(list);
   if (!url) return maybeSkip('noStream');
   audio.src = url;
@@ -397,13 +399,13 @@ function pickStream(list) {
   return s?.url || null;
 }
 
-function maybeSkip(reason) {
+function maybeSkip(reason, msg) {
   if (++S.skipCount > 3) {
     S.skipCount = 0;
-    toast(reason === 'noStream' ? 'Streams nahi milay — source switch karo' : 'Playback ruk gaya');
+    toast(msg ? `Stream fail: ${msg}` : 'Playback ruk gaya — doosra gaana try karo', 5000);
     return;
   }
-  toast('Gaana skip ho raha hai…');
+  toast(msg ? `Stream fail (${msg.slice(0, 90)}) — agla gaana…` : 'Gaana skip ho raha hai…', 4200);
   next();
 }
 function next(manual = true) {
@@ -466,7 +468,7 @@ function setMediaSession(t) {
       title: t.title,
       artist: artistsText(t),
       album: t.album?.title || '',
-      artwork: t.artwork ? [{ src: t.artwork, sizes: '500x500', type: 'image/jpeg' }] : [],
+      artwork: artUrl(t) ? [{ src: artUrl(t), sizes: '500x500', type: 'image/jpeg' }] : [],
     });
     navigator.mediaSession.setActionHandler('play', () => audio.play());
     navigator.mediaSession.setActionHandler('pause', () => audio.pause());
@@ -480,7 +482,7 @@ function renderNpLeft() {
   const t = S.current;
   const el = $('#np-left');
   if (!t) { el.innerHTML = ''; return; }
-  el.innerHTML = `${t.artwork ? `<img src="${esc(t.artwork)}" alt="" data-fb="np-tile" data-ch="${esc(t.title.slice(0, 1))}">` : `<div class="np-tile">${esc(t.title.slice(0, 1))}</div>`}
+  el.innerHTML = `${artUrl(t) ? `<img src="${esc(artUrl(t))}" alt="" data-fb="np-tile" data-ch="${esc(t.title.slice(0, 1))}">` : `<div class="np-tile">${esc(t.title.slice(0, 1))}</div>`}
     <div style="min-width:0"><div class="np-title">${esc(t.title)}</div><div class="np-artist">${esc(artistsText(t))}</div></div>
     <button class="like-btn ${isLiked(t.id) ? 'liked' : ''}" style="opacity:1" data-act="like-cur" data-like="${esc(t.id)}">${isLiked(t.id) ? '♥' : '♡'}</button>`;
   $('#btn-play').textContent = audio.paused ? '▶' : '❚❚';
@@ -526,7 +528,7 @@ function renderQueuePanel() {
   const body = $('#rp-body');
   const cur = S.current;
   const qrow = (t, mode, i) => `<div class="qrow" data-act="${mode === 'now' ? 'q-now' : mode === 'up' ? 'up-play' : 'q-play'}" data-mode="${mode}" data-i="${i}" data-menu-track="${esc(t.id)}">
-      ${t.artwork ? `<img src="${esc(t.artwork)}" alt="" data-fb="q-tile" data-ch="${esc(t.title.slice(0, 1))}">` : `<div class="q-tile">${esc(t.title.slice(0, 1))}</div>`}
+      ${artUrl(t) ? `<img src="${esc(artUrl(t))}" alt="" data-fb="q-tile" data-ch="${esc(t.title.slice(0, 1))}">` : `<div class="q-tile">${esc(t.title.slice(0, 1))}</div>`}
       <div style="min-width:0"><div class="q-title" ${mode === 'now' ? 'style="color:var(--green)"' : ''}>${esc(t.title)}</div><div class="q-artist">${esc(artistsText(t))}</div></div>
       ${mode !== 'now' ? `<button class="x" data-act="q-del" data-mode="${mode}" data-i="${i}" title="Remove">✕</button>` : ''}
     </div>`;
@@ -594,7 +596,7 @@ function renderFsLyrics() {
   if (!t) { box.classList.add('hidden'); box.classList.remove('fslyrics-open'); return; }
   box.classList.remove('hidden'); box.classList.add('fslyrics-open');
   const lines = S.lyrics?.synced;
-  box.innerHTML = `<div>${t.artwork ? `<img src="${esc(t.artwork)}" alt="">` : `<div class="fs-tile">${esc(t.title.slice(0, 1))}</div>`}
+  box.innerHTML = `<div>${artUrl(t) ? `<img src="${esc(artUrl(t))}" alt="">` : `<div class="fs-tile">${esc(t.title.slice(0, 1))}</div>`}
       <div class="fs-title">${esc(t.title)}</div><div class="fs-artist">${esc(artistsText(t))}</div>
       <button class="btn" data-act="fs-close" style="margin-top:20px">✕ Band karo (Esc)</button></div>
     <div class="fs-lines">${lines?.length

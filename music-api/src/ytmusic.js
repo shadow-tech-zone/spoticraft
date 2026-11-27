@@ -53,6 +53,9 @@ export function parseListItem(item) {
   const videoId = nav?.watchEndpoint?.videoId;
   if (videoId) {
     let artistName = null, artistId = null, albumName = null, albumId = null, duration = null;
+    /* album/playlist rows mein duration aksar fixedColumns mein hota hai */
+    const fixedRuns = r.fixedColumns?.[0]?.musicResponsiveListItemFixedColumnRenderer?.text?.runs || [];
+    for (const run of fixedRuns) if (isDuration(run.text)) duration = run.text;
     for (const run of infoRuns) {
       const bid = run.navigationEndpoint?.browseEndpoint?.browseId;
       if (bid?.startsWith('UC')) { artistId = bid; artistName = run.text; }
@@ -197,12 +200,15 @@ async function playerBaseJs(videoId) {
 
 const PLAYER_CLIENTS = [
   { clientName: 'IOS', clientVersion: '20.10.4', userAgent: 'com.google.ios.youtube/20.10.4 (iPhone16,2; U; CPU iOS 18_3_2 like Mac OS X;)', deviceMake: 'Apple', deviceModel: 'iPhone16,2', osName: 'iPhone', osVersion: '18.3.2.22D82' },
+  { clientName: 'ANDROID_VR', clientVersion: '1.65.10', userAgent: 'com.google.android.apps.youtube.vr.oculus/1.65.10 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip', androidSdkVersion: 32, osName: 'Android', osVersion: '12L' },
   { clientName: 'ANDROID', clientVersion: '20.10.1', userAgent: 'com.google.android.youtube/20.10.1 (Linux; U; Android 14; en_US) gzip', androidSdkVersion: 34, osName: 'Android', osVersion: '14' },
+  { clientName: 'WEB_EMBEDDED_PLAYER', clientVersion: '1.20260101.01.00', userAgent: UA_DESKTOP, thirdParty: { embedUrl: 'https://www.youtube.com/' } },
   { clientName: 'TVHTML5', clientVersion: '7.20250205.16.00', userAgent: 'Mozilla/5.0 (SMART-TV; Linux; Tizen 6.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36' },
 ];
 
 async function streamsFor(videoId) {
   let baseJs = null;
+  const attempts = [];
   for (const client of PLAYER_CLIENTS) {
     try {
       const body = {
@@ -218,7 +224,7 @@ async function streamsFor(videoId) {
         body: JSON.stringify(body),
       });
       const sd = json?.streamingData;
-      if (!sd) continue;
+      if (!sd) { attempts.push(`${client.clientName}:${json?.playabilityStatus?.status || 'no_data'} ${json?.playabilityStatus?.reason || ''}`.trim()); continue; }
       const formats = [...(sd.formats || []), ...(sd.adaptiveFormats || [])]
         .filter(f => (f.mimeType || '').startsWith('audio/'))
         .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
@@ -246,9 +252,10 @@ async function streamsFor(videoId) {
         }
       }
       if (out.length) return out;
-    } catch { /* agla client */ }
+      attempts.push(`${client.clientName}:no_audio_formats`);
+    } catch (e) { attempts.push(`${client.clientName}:${e.code || e.message}`); }
   }
-  throw new ApiError('no playable stream found (all player clients failed)', 502, 'no_stream');
+  throw new ApiError(`no playable stream found [${attempts.join(' | ')}]`, 502, 'no_stream');
 }
 
 /* ── source ── */
@@ -274,7 +281,10 @@ export const ytmusic = {
   },
 
   async search(query, filter = 'all', pageToken = null) {
-    const body = pageToken ? { continuation: pageToken } : { query };
+    /* pageToken sirf asli continuation string ho to use karo —
+       page number (1) aaye to fresh search */
+    const body = (typeof pageToken === 'string' && pageToken.length > 10)
+      ? { continuation: pageToken } : { query };
     const json = await innertube('search', body);
     const parsed = parseSearchResponse(json);
     if (filter === 'track') return { items: parsed.tracks, page: null };

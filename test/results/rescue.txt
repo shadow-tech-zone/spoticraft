@@ -1,4 +1,4 @@
-Bloomee APP-PATH (resolver) test — 2026-11-27T19:20:35.348Z
+Bloomee APP-PATH (resolver) test — 2026-11-27T19:22:14.647Z
 
 ── JioSaavn gaana (app jaisa): "Tu Mil Jaaye (From "KING")" (jiosaavn::QcfFd62t)
     log: streams ok jiosaavn QcfFd62t 3 variants
@@ -6,10 +6,10 @@ Bloomee APP-PATH (resolver) test — 2026-11-27T19:20:35.348Z
     bytes: HTTP 206 type=audio/mp4 n=4096
   ✓ PLAYABLE
 
-── YT Music gaana (app jaisa): "Jaan Nisaar (Arijit)" (ytmusic::3HlzLiCL9Xs)
-    log: streams primary fail ytmusic 3HlzLiCL9Xs no playable stream found [IOS:LOGIN_REQUIRED Sign in to confirm you’re not a bot | ANDROID_VR:LOGIN_REQUIRED Sign in to confirm you’re not a bot | ANDROID:LOGIN_REQUIRED Sign in to confirm you’re not a bot | TVHTML5_SIMPLY:UNPLAYABLE Sign in to confirm you’re not a bot | WEB_REMIX:LOGIN_REQUIRED Sign in to confirm you’re not a bot | WEB_EMBEDDED_PLAYER:ERROR This video is unavailable | TVHTML5:LOGIN_REQUIRED Sign in to confirm you’re not a bot]
-    log: streams fallback ok jiosaavn jiosaavn::rKwCExNY
-    resolved via=jiosaavn-fallback matched="Jaan Nisaar (Arijit)" variants=3
+── YT Music gaana (app jaisa): "Ilahi" (ytmusic::lSPNH_rYKIg)
+    log: streams primary fail ytmusic lSPNH_rYKIg no playable stream found [IOS:LOGIN_REQUIRED Sign in to confirm you’re not a bot | ANDROID_VR:LOGIN_REQUIRED Sign in to confirm you’re not a bot]
+    log: streams fallback ok jiosaavn jiosaavn::4CI_0bzt
+    resolved via=jiosaavn-fallback matched="Ilahi" variants=3
     bytes: HTTP 206 type=audio/mp4 n=4096
   ✓ PLAYABLE
 

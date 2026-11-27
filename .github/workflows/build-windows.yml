@@ -8,6 +8,9 @@ on:
       - arena/09cac133-spoticraft
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -34,3 +37,18 @@ jobs:
             app/dist/*.exe
           if-no-files-found: error
           retention-days: 30
+
+      - name: Get version
+        id: ver
+        working-directory: app
+        shell: bash
+        run: echo "v=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Publish portable to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.v }}
+          name: Bloomee v${{ steps.ver.outputs.v }}
+          body: "Windows portable build — download Bloomee-Portable-${{ steps.ver.outputs.v }}.exe and run. Unsigned: SmartScreen par More info → Run anyway."
+          files: app/dist/Bloomee-Portable-*.exe
+          fail_on_unmatched_files: true

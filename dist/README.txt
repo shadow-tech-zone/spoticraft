@@ -1,4 +1,4 @@
-Bloomee v0.1.1 — test build (UI fixes) (native C++ Win32 + Direct2D, single EXE)
+Bloomee v0.1.2 — test build (cover fixes) (native C++ Win32 + Direct2D, single EXE)
 
 CHALANA
   Bloomee.exe double-click karo. Kuch install nahi karna.
@@ -22,5 +22,5 @@ MASLA HO TO
   saath bata do kis step par masla hua.
 
 SHA256
-  Bloomee.exe        ef9b481e4591bbaf8e57cf42a4603c699d0cd933c1edd93cc2ade653146088ee
-  Bloomee-win64.zip  35285df45398a0290084aa71b7a487c6466fc0dee15ad36a4dcddac533e3c4b7
+  Bloomee.exe        76cae85443846991194e830b2c0a96d2a429390bb6b5323bd88912906ea4baf6
+  Bloomee-win64.zip  e42d0d807a8a8f7508c08dcb718c598f678c42fdfaa6e7a32913cb3c03e5e422

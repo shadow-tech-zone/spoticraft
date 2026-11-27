@@ -229,11 +229,26 @@ static void PaintCardText(const DRect& card, const MediaItem& item, bool circle)
     } else {
         g_ui.FillRounded(art, circle ? artSide / 2 : 4, color::elevatedHighlight);
         if (item.kind == MediaItem::Kind::Artist) g_ui.IconArtist(R(art.left + artSide * 0.25f, art.top + artSide * 0.25f, art.right - artSide * 0.25f, art.bottom - artSide * 0.25f), color::textSubdued);
+        else {
+            std::string title = item.Title();
+            g_ui.Text(title.empty() ? "?" : title.substr(0, 1), art, artSide * 0.36f, TW::Bold,
+                      color::Alpha(color::textSubdued, 0.8f), true, DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+        }
     }
     g_ui.Text(item.Title(), R(x, art.bottom + 10, card.right - 12, art.bottom + 30), 14, TW::SemiBold);
     std::string sub = item.Subtitle();
     if (item.kind == MediaItem::Kind::Album && !item.album.year.empty()) sub = item.album.year + " • " + sub;
     g_ui.Text(sub, R(x, art.bottom + 32, card.right - 12, art.bottom + 50), 12, TW::Regular, color::textSubdued);
+}
+
+/* cover: bitmap, warna letter-tile (khaali dabba kabhi nahi) */
+static void PaintCover(const DRect& rect, const std::string& url, const std::string& title, float radius = 4) {
+    ID2D1Bitmap* bmp = g_ui.GetImage(url);
+    if (bmp) { g_ui.DrawBitmap(bmp, rect); return; }
+    g_ui.FillRounded(rect, radius, color::elevatedHighlight);
+    std::string ch = title.empty() ? "?" : title.substr(0, 1);
+    g_ui.Text(ch, rect, std::min(W(rect), H(rect)) * 0.42f, TW::Bold, color::Alpha(color::textSubdued, 0.85f),
+              true, DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 }
 
 /* row heights by density (study §3) */
@@ -251,9 +266,7 @@ static void PaintTrackRow(const DRect& row, const Track& t, int idx, bool showAl
     else g_ui.Text(RowNum(idx), R(row.left + 4, row.top + 13, row.left + 34, row.top + 35), 13, TW::Regular, playing ? color::green : color::textSubdued, true);
     /* cover 40 */
     DRect cov = R(row.left + 44, row.top + 4, row.left + 84, row.top + 44);
-    ID2D1Bitmap* bmp = g_ui.GetImage(t.artwork);
-    if (bmp) g_ui.DrawBitmap(bmp, cov);
-    else g_ui.FillRounded(cov, 4, color::elevatedHighlight);
+    PaintCover(cov, t.artwork, t.title);
     /* hover overlay play */
     if (hovered) {
         g_ui.FillRect(cov, color::Alpha(color::black, 0.45f));
@@ -1893,7 +1906,7 @@ static void PaintSidebar(const DRect& area) {
         DRect ir = R(x + 8, y + 6, x + 32, y + 30);
         if (iconKind == 0) g_ui.IconHome(ir, active ? color::textBase : color::textSubdued, active);
         else if (iconKind == 1) g_ui.IconEq(ir, active ? color::textBase : color::textSubdued, 0.5f);
-        else g_ui.IconQueue(ir, active ? color::textBase : color::textSubdued, active);
+        else g_ui.IconChart(ir, active ? color::textBase : color::textSubdued);
         g_ui.Text(label, R(x + 44, y + 7, x + w, y + 29), 14, TW::SemiBold, active ? color::textBase : color::textSubdued);
         AddZone(row, zone, 6);
         y += 40;

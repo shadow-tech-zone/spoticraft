@@ -106,6 +106,7 @@ public:
     void IconMax(const DRect& r, const D2D1_COLOR_F& c);
     void IconRestore(const DRect& r, const D2D1_COLOR_F& c);
     void IconArtist(const DRect& r, const D2D1_COLOR_F& c);
+    void IconChart(const DRect& r, const D2D1_COLOR_F& c);
     void IconPlayingWave(const DRect& r, const D2D1_COLOR_F& c, float phase);
 
     /* image cache: url -> bitmap (async load; saari map access UI thread par) */
@@ -130,7 +131,7 @@ private:
     IDWriteFontCollection* m_embeddedFonts = nullptr;
     int m_w = 0, m_h = 0;
 
-    struct ImgEntry { int state = 0; ID2D1Bitmap* bmp = nullptr; std::vector<uint8_t> bytes; };
+    struct ImgEntry { int state = 0; ID2D1Bitmap* bmp = nullptr; std::vector<uint8_t> bytes; int retries = 0; };
     std::unordered_map<std::string, ImgEntry> m_images;
 };
 

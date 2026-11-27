@@ -337,6 +337,7 @@ void Renderer::PreloadImage(const std::string& url) {
     RunAsync([u] {
         auto* msg = new ImgMsg{u, {}, false};
         msg->ok = net::GetBytes(u, msg->bytes) && !msg->bytes.empty();
+        if (!msg->ok) LogLine("img fail: " + u.substr(0, 110));
         PostMessageW(g_mainWnd, WM_APP_IMG, (WPARAM)msg, 0);
     }, [] {});
 }
@@ -355,9 +356,16 @@ ID2D1Bitmap* Renderer::GetImage(const std::string& url) {
     auto& e = it->second;
     if (e.state == 2 && !e.bytes.empty()) {
         e.bmp = BitmapFromMemory(e.bytes.data(), e.bytes.size());
+        if (!e.bmp) LogLine("img decode fail: " + url.substr(0, 110));
         e.bytes.clear();
         e.bytes.shrink_to_fit();
         e.state = e.bmp ? 4 : 3;
+    }
+    /* fail par 2 dafa khud retry — khaali dabba hamesha ke liye na rahe */
+    if (e.state == 3 && e.retries < 2) {
+        e.retries++;
+        e.state = 0;
+        PreloadImage(url);
     }
     return e.state == 4 ? e.bmp : nullptr;
 }
@@ -501,11 +509,18 @@ void Renderer::IconHome(const DRect& r, const D2D1_COLOR_F& c, bool active) {
     }
 }
 void Renderer::IconLibrary(const DRect& r, const D2D1_COLOR_F& c) {
-    float cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2;
-    float s = std::min(W(r), H(r)) * 0.34f;
-    Line(*this, cx - s * 0.8f, cy - s, cx - s * 0.8f, cy + s, 2.0f, c);
-    Line(*this, cx - s * 0.25f, cy - s, cx - s * 0.25f, cy + s, 2.0f, c);
-    Line(*this, cx + s * 0.75f, cy - s * 0.9f, cx + s * 0.25f, cy + s, 2.0f, c);
+    /* do seedhi kitabain + ek tehri (Spotify library glyph) */
+    float x = r.left, y = r.top, w = W(r), h = H(r);
+    FillRect(R(x + w * 0.14f, y + h * 0.12f, x + w * 0.26f, y + h * 0.88f), c);
+    FillRect(R(x + w * 0.40f, y + h * 0.12f, x + w * 0.52f, y + h * 0.88f), c);
+    Line(*this, x + w * 0.82f, y + h * 0.16f, x + w * 0.62f, y + h * 0.86f, 4.2f, c);
+}
+void Renderer::IconChart(const DRect& r, const D2D1_COLOR_F& c) {
+    /* bar chart: 3 ascending bars */
+    float bw = W(r) * 0.20f, base = r.bottom - H(r) * 0.12f, top0 = r.top + H(r) * 0.12f;
+    FillRect(R(r.left + W(r) * 0.10f, base - (base - top0) * 0.45f, r.left + W(r) * 0.10f + bw, base), c);
+    FillRect(R(r.left + W(r) * 0.40f, base - (base - top0) * 0.70f, r.left + W(r) * 0.40f + bw, base), c);
+    FillRect(R(r.left + W(r) * 0.70f, top0, r.left + W(r) * 0.70f + bw, base), c);
 }
 void Renderer::IconPlus(const DRect& r, const D2D1_COLOR_F& c) {
     float cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2;

@@ -3,3 +3,7 @@ BloomeeTunes/
 api-anything/
 
 node_modules/
+
+# native app build outputs
+app/build/
+__pycache__/

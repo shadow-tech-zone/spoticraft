@@ -33,7 +33,8 @@ sections=30
   [29] itemSectionRenderer
 
 ── ytmusic.search() parsed ──
-tracks=0 albums=0 playlists=0 artists=0
+tracks=10 albums=4 playlists=6 artists=6
+first track: ytmusic::lSPNH_rYKIg Ilahi
 
 ── known video stream test (dQw4w9WgXcQ) ──
 streams=5 top=137kbps rr4---sn-vgqsrnld.googlevideo.com

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bloomee — Web</title>
+<meta name="description" content="Bloomee web player — Spotify design language. Local + plugin streaming, ad-free.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%231ED760'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='black'>♪</text></svg>">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+  <!-- ══════════ SIDEBAR (desktop) ══════════ -->
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-dot">♪</span> Bloomee</div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="home">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-4v-6H10v6H6v-9H3z"/></svg>
+        <span>Home</span><span class="dot"></span>
+      </button>
+      <button class="nav-item" data-view="search">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 2a8 8 0 105.3 14l4.4 4.4 1.4-1.4-4.4-4.4A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z"/></svg>
+        <span>Search</span><span class="dot"></span>
+      </button>
+      <button class="nav-item" data-view="library">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h2v16H4zM8 4h2v16H8zM12 5l14 3-3 12-14-3z"/></svg>
+        <span>Your Library</span><span class="dot"></span>
+      </button>
+    </nav>
+    <div class="side-label">Collection</div>
+    <nav class="nav">
+      <button class="nav-item" data-view="local">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 18V6l10-2v11.5a3.5 3.5 0 11-2-3.16V6.5L11 8v10.5a3.5 3.5 0 11-2-3.16z"/></svg>
+        <span>Local Music</span><span class="dot"></span>
+      </button>
+      <button class="nav-item" data-view="offline">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.6l3.6-3.6L17 11.4l-5 5-5-5 1.4-1.4L12 13.6V3h0zM5 19h14v2H5z"/></svg>
+        <span>Offline</span><span class="dot"></span>
+      </button>
+    </nav>
+    <div class="side-card">
+      <b>Create your first playlist</b>
+      <p>It's easy, we'll help you</p>
+      <button class="pill-btn" id="sideCreatePlaylist">Create playlist</button>
+    </div>
+    <p class="side-foot">Bloomee Web • Spotify design<br>Ad-free • Local + Plugins</p>
+  </aside>
+
+  <!-- ══════════ MAIN ══════════ -->
+  <main class="main" id="mainScroll">
+    <header class="topbar">
+      <div class="top-arrows">
+        <button class="arrow" id="backBtn" title="Back">‹</button>
+        <button class="arrow" id="fwdBtn" title="Forward">›</button>
+      </div>
+      <label class="search-pill">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 2a8 8 0 105.3 14l4.4 4.4 1.4-1.4-4.4-4.4A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z"/></svg>
+        <input id="globalSearch" type="text" placeholder="What do you want to listen to?" autocomplete="off">
+      </label>
+      <div class="src-switch" role="group" aria-label="Music catalog — Bloomee resolver plugins">
+        <button type="button" data-catalog="jiosaavn" class="on" title="Desi catalog — JioSaavn (jisaavn.bex)">🇮🇳<span> Desi</span></button>
+        <button type="button" data-catalog="ytmusic" title="Global catalog — YouTube Music (ytmusic.bex)">🌍<span> Global</span></button>
+      </div>
+      <span class="top-badge">WEB</span>
+    </header>
+    <section id="view"></section>
+  </main>
+</div>
+
+<!-- ══════════ MOBILE BOTTOM NAV ══════════ -->
+<nav class="mobile-nav">
+  <button class="m-nav active" data-view="home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-4v-6H10v6H6v-9H3z"/></svg><span>Home</span></button>
+  <button class="m-nav" data-view="search"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 2a8 8 0 105.3 14l4.4 4.4 1.4-1.4-4.4-4.4A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z"/></svg><span>Search</span></button>
+  <button class="m-nav" data-view="library"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h2v16H4zM8 4h2v16H8zM12 5l14 3-3 12-14-3z"/></svg><span>Library</span></button>
+  <button class="m-nav" data-view="local"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 18V6l10-2v11.5a3.5 3.5 0 11-2-3.16V6.5L11 8v10.5a3.5 3.5 0 11-2-3.16z"/></svg><span>Local</span></button>
+  <button class="m-nav" data-view="offline"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.6l3.6-3.6L17 11.4l-5 5-5-5 1.4-1.4L12 13.6V3h0zM5 19h14v2H5z"/></svg><span>Offline</span></button>
+</nav>
+
+<!-- ══════════ NOW PLAYING BAR ══════════ -->
+<footer class="player" id="playerBar">
+  <div class="p-left">
+    <div class="p-art" id="pArt">♪</div>
+    <div class="p-meta">
+      <b id="pTitle">Nothing playing</b>
+      <span id="pArtist">Pick a track to start</span>
+    </div>
+    <button class="p-like" id="pLike" title="Like">♡</button>
+  </div>
+  <div class="p-center">
+    <div class="p-controls">
+      <button id="shuffleBtn" title="Shuffle">🔀</button>
+      <button id="prevBtn" title="Previous">⏮</button>
+      <button class="p-play" id="playBtn" title="Play/Pause">▶</button>
+      <button id="nextBtn" title="Next">⏭</button>
+      <button id="repeatBtn" title="Repeat">🔁</button>
+    </div>
+    <div class="p-progress-row">
+      <span id="curTime">0:00</span>
+      <div class="progress" id="progressBar"><i id="progressFill"></i></div>
+      <span id="durTime">0:00</span>
+    </div>
+  </div>
+  <div class="p-right">
+    <span>🔊</span>
+    <input type="range" id="volume" min="0" max="100" value="80" title="Volume">
+    <button id="expandBtn" title="Full player">⤢</button>
+  </div>
+</footer>
+
+<!-- ══════════ FULL PLAYER OVERLAY ══════════ -->
+<div class="full-player" id="fullPlayer">
+  <button class="fp-close" id="fpClose">⌄</button>
+  <div class="fp-inner">
+    <div class="fp-art" id="fpArt">♪</div>
+    <h2 id="fpTitle">—</h2>
+    <p id="fpArtist">—</p>
+    <div class="fp-progress"><i id="fpFill"></i></div>
+    <div class="fp-times"><span id="fpCur">0:00</span><span id="fpDur">0:00</span></div>
+    <div class="fp-controls">
+      <button id="fpPrev">⏮</button>
+      <button class="fp-play" id="fpPlay">▶</button>
+      <button id="fpNext">⏭</button>
+    </div>
+    <div class="fp-lyrics" id="fpLyrics"><p>🎤 Lyrics yahan aayenge<br><span>Gaana chalao — Bloomee ke lrcnet plugin (LRCLIB) se time-synced lyrics</span></p></div>
+  </div>
+</div>
+
+<!-- ══════════ TOAST ══════════ -->
+<div class="toast" id="toast"></div>
+
+<audio id="audio" preload="metadata"></audio>
+<script src="app.js"></script>
+<script src="views.js"></script>
+<script src="player.js"></script>
+</body>
+</html>

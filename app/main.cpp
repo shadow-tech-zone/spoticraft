@@ -1252,7 +1252,7 @@ static void HandleZoneClick(int zone, float x, float y, bool rightClick) {
                         OpenMenu(m, x, y, Track{}, zone, v.id);
                     } else Navigate(v);
                 }
-            } else if (zone >= Z_RP_ROW) {
+            } else if (zone >= Z_RP_ROW - 1) {
                 int i = zone - Z_RP_ROW;
                 if (i == -1 && g.hasCurrent) { /* now playing */ }
                 else if (i >= 100) {
@@ -1436,6 +1436,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
             return 0;
         }
         case WM_SIZE: {
+            if (LOWORD(lp) == 0 || HIWORD(lp) == 0) return 0;  /* minimized */
             g_ui.Resize(LOWORD(lp), HIWORD(lp));
             PositionEdit();
             /* maximized mein tray restore glyph */
@@ -1758,6 +1759,8 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
         case WM_DPICHANGED: {
             RECT* rc = (RECT*)lp;
             SetWindowPos(hwnd, nullptr, rc->left, rc->top, rc->right - rc->left, rc->bottom - rc->top, SWP_NOZORDER);
+            float dpi = (float)LOWORD(wp);
+            if (g_ui.RT()) g_ui.RT()->SetDpi(dpi, dpi);
             g_ui.Resize(rc->right - rc->left, rc->bottom - rc->top);
             return 0;
         }

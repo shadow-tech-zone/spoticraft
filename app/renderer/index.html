@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; media-src https:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'none'">
+<title>Bloomee</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- ══════════ TITLE BAR ══════════ -->
+  <header id="titlebar">
+    <div class="tb-left">
+      <button class="logo" data-act="go-home" title="Bloomee">
+        <span class="logo-mark">▶</span><span class="logo-text">Bloomee</span>
+      </button>
+      <button class="navbtn" id="btn-back" data-act="back" title="Go back">‹</button>
+      <button class="navbtn" id="btn-fwd" data-act="forward" title="Go forward">›</button>
+    </div>
+    <div class="tb-center">
+      <div class="searchbox">
+        <span class="search-ic">⌕</span>
+        <input id="search" type="text" placeholder="What do you want to play?" autocomplete="off" spellcheck="false">
+        <button class="search-clear hidden" id="search-clear" data-act="clear-search">✕</button>
+        <div id="suggest" class="suggest hidden"></div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <button class="iconbtn" data-act="menu-app" title="Settings and more">•••</button>
+      <div class="winbtns">
+        <button class="winbtn" data-act="win-min" title="Minimize">─</button>
+        <button class="winbtn" id="win-max" data-act="win-max" title="Maximize">□</button>
+        <button class="winbtn danger" data-act="win-close" title="Close">✕</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════ SHELL ══════════ -->
+  <div id="shell">
+    <aside id="sidebar" class="panel">
+      <nav class="lib-nav">
+        <button class="navitem" data-act="go-home" id="nav-home"><span class="nv-ic">⌂</span>Home</button>
+        <button class="navitem" data-act="go-charts" id="nav-charts"><span class="nv-ic">▦</span>Top Charts</button>
+      </nav>
+      <div class="lib-head">
+        <span class="lib-title"><span class="nv-ic">▥</span>Your Library</span>
+        <button class="iconbtn sm" data-act="new-playlist" title="Create playlist">＋</button>
+      </div>
+      <div id="lib-list" class="lib-list"></div>
+      <div class="sidebar-foot">
+        <div class="src-label">Music source</div>
+        <div class="chips" id="src-chips"></div>
+      </div>
+    </aside>
+
+    <main id="main" class="panel">
+      <div id="view"></div>
+    </main>
+
+    <aside id="rightpanel" class="panel hidden">
+      <div class="rp-head">
+        <div class="rp-tabs">
+          <button class="rp-tab" data-act="rp-tab" data-tab="queue">Queue</button>
+          <button class="rp-tab" data-act="rp-tab" data-tab="lyrics">Lyrics</button>
+        </div>
+        <button class="iconbtn sm" data-act="rp-close">✕</button>
+      </div>
+      <div id="rp-body"></div>
+    </aside>
+  </div>
+
+  <!-- ══════════ PLAYER ══════════ -->
+  <footer id="player">
+    <div class="np-left" id="np-left"></div>
+    <div class="np-center">
+      <div class="transport">
+        <button class="tbtn" id="btn-shuffle" data-act="shuffle" title="Shuffle">⤨</button>
+        <button class="tbtn" data-act="prev" title="Previous">⏮</button>
+        <button class="playbtn" id="btn-play" data-act="toggle" title="Play">▶</button>
+        <button class="tbtn" data-act="next" title="Next">⏭</button>
+        <button class="tbtn" id="btn-repeat" data-act="repeat" title="Repeat">⤸</button>
+      </div>
+      <div class="seekrow">
+        <span class="time" id="t-cur">0:00</span>
+        <div class="slider" id="seek"><div class="slider-fill"></div><div class="slider-knob"></div></div>
+        <span class="time" id="t-dur">0:00</span>
+      </div>
+    </div>
+    <div class="np-right">
+      <button class="iconbtn" id="btn-rp-lyrics" data-act="rp-lyrics" title="Lyrics">♪</button>
+      <button class="iconbtn" id="btn-rp-queue" data-act="rp-queue" title="Queue">☰</button>
+      <span class="vol-ic" id="vol-ic">🔊</span>
+      <div class="slider sm" id="vol"><div class="slider-fill"></div><div class="slider-knob"></div></div>
+      <button class="iconbtn" data-act="fs-lyrics" title="Full screen">⛶</button>
+    </div>
+  </footer>
+
+  <!-- overlays -->
+  <div id="fslyrics" class="hidden"></div>
+  <div id="menu" class="hidden"></div>
+  <div id="modal" class="hidden"></div>
+  <div id="toast" class="hidden"></div>
+  <audio id="audio" preload="auto"></audio>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

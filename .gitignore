@@ -6,4 +6,5 @@ node_modules/
 
 # native app build outputs
 app/build/
+app/dist/
 __pycache__/

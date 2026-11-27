@@ -1,0 +1,47 @@
+{
+  "name": "bloomee",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Bloomee — Spotify-measured native Windows desktop music app (Electron).",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win",
+    "pack": "electron-builder --win --dir"
+  },
+  "devDependencies": {
+    "electron": "latest",
+    "electron-builder": "latest"
+  },
+  "build": {
+    "appId": "com.bloomee.desktop",
+    "productName": "Bloomee",
+    "copyright": "Bloomee",
+    "files": [
+      "main.js",
+      "preload.cjs",
+      "core/**",
+      "renderer/**",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "assets/icon.ico",
+      "artifactName": "Bloomee-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Bloomee",
+      "artifactName": "Bloomee-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "Bloomee-Portable-${version}.${ext}"
+    }
+  }
+}

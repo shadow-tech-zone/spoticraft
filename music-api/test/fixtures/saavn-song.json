@@ -1,0 +1,30 @@
+{
+  "songs": [
+    {
+      "id": "TestSong1",
+      "title": "Kesariya &quot;Live&quot;",
+      "album": "Brahmastra",
+      "year": "2022",
+      "primary_artists": "Arijit Singh",
+      "primary_artists_ids": "459320",
+      "image": "https://c.saavncdn.com/191/Brahmastra-150x150.jpg",
+      "duration": "268",
+      "perma_url": "https://www.jiosaavn.com/song/kesariya/TestSong1",
+      "type": "song",
+      "more_info": {
+        "album_id": "36543210",
+        "album": "Brahmastra",
+        "duration": "268",
+        "encrypted_media_url": "ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyDcRFfAApeN7TVeXlASS4OBw7tS9a8Gtq",
+        "media_preview_url": "https://preview.saavncdn.com/695/test_preview.mp4",
+        "explicit_content": 0,
+        "has_lyrics": "true",
+        "artistMap": {
+          "primary_artists": [
+            { "id": "459320", "name": "Arijit Singh", "role": "primary_artists" }
+          ]
+        }
+      }
+    }
+  ]
+}

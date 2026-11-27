@@ -1,0 +1,27 @@
+{
+  "total": 2,
+  "results": [
+    {
+      "id": "S1",
+      "title": "Tum Hi Ho",
+      "album": "Aashiqui 2",
+      "year": "2013",
+      "primary_artists": "Arijit Singh",
+      "image": "https://c.saavncdn.com/430/Aashiqui-2-150x150.jpg",
+      "duration": "262",
+      "type": "song",
+      "more_info": { "album_id": "1100001", "duration": "262", "explicit_content": 0 }
+    },
+    {
+      "id": "S2",
+      "title": "Agar Tum Saath Ho",
+      "album": "Tamasha",
+      "year": "2015",
+      "primary_artists": "Alka Yagnik, Arijit Singh",
+      "image": "https://c.saavncdn.com/430/Tamasha-150x150.jpg",
+      "duration": "341",
+      "type": "song",
+      "more_info": { "album_id": "1100002", "duration": "341", "explicit_content": 1 }
+    }
+  ]
+}

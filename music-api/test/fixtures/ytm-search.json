@@ -1,0 +1,83 @@
+{
+  "contents": {
+    "tabbedSearchResultsRenderer": {
+      "tabs": [
+        {
+          "tabRenderer": {
+            "content": {
+              "sectionListRenderer": {
+                "contents": [
+                  {
+                    "musicShelfRenderer": {
+                      "title": { "runs": [{ "text": "Songs" }] },
+                      "contents": [
+                        {
+                          "musicResponsiveListItemRenderer": {
+                            "flexColumns": [
+                              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [{ "text": "Kesariya", "navigationEndpoint": { "watchEndpoint": { "videoId": "vidKesariya1" } } }] } } },
+                              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [
+                                { "text": "Arijit Singh", "navigationEndpoint": { "browseEndpoint": { "browseId": "UCartistArijit" } } },
+                                { "text": " • " },
+                                { "text": "Brahmastra", "navigationEndpoint": { "browseEndpoint": { "browseId": "MPREalbumBrahma" } } },
+                                { "text": " • " },
+                                { "text": "4:28" }
+                              ] } } }
+                            ],
+                            "thumbnail": { "musicThumbnailRenderer": { "thumbnail": { "thumbnails": [
+                              { "url": "https://lh3.googleusercontent.com/aaa=w60-h60", "width": 60 },
+                              { "url": "https://lh3.googleusercontent.com/aaa=w540-h540", "width": 540 }
+                            ] } } }
+                          }
+                        },
+                        {
+                          "musicResponsiveListItemRenderer": {
+                            "flexColumns": [
+                              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [{ "text": "Explicit Song", "navigationEndpoint": { "watchEndpoint": { "videoId": "vidExplicit2" } } }] } } },
+                              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [
+                                { "text": "Some Rapper" },
+                                { "text": " • " },
+                                { "text": "3:05" }
+                              ] } } }
+                            ],
+                            "thumbnail": { "musicThumbnailRenderer": { "thumbnail": { "thumbnails": [
+                              { "url": "https://lh3.googleusercontent.com/bbb=w60-h60", "width": 60 }
+                            ] } } },
+                            "badges": [{ "musicInlineBadgeRenderer": { "icon": { "iconType": "MUSIC_EXPLICIT_BADGE" } } }]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "musicShelfRenderer": {
+                      "title": { "runs": [{ "text": "Albums" }] },
+                      "contents": [
+                        {
+                          "musicResponsiveListItemRenderer": {
+                            "flexColumns": [
+                              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [{ "text": "Brahmastra (Original Motion Picture Soundtrack)", "navigationEndpoint": { "browseEndpoint": { "browseId": "MPREalbumBrahma" } } }] } } },
+                              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [
+                                { "text": "Album" },
+                                { "text": " • " },
+                                { "text": "Pritam", "navigationEndpoint": { "browseEndpoint": { "browseId": "UCartistPritam" } } },
+                                { "text": " • " },
+                                { "text": "2022" }
+                              ] } } }
+                            ],
+                            "thumbnail": { "musicThumbnailRenderer": { "thumbnail": { "thumbnails": [
+                              { "url": "https://lh3.googleusercontent.com/ccc=w226-h226", "width": 226 }
+                            ] } } }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

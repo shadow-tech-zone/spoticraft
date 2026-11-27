@@ -1,4 +1,6 @@
 # SpotiCraft
 
-Fresh start — saara purana code wipe kar diya gaya hai.
-Purana code git history mein mehfooz hai (aakhri full build: commit 8dcb641) — jab chaahe wapas la sakte hain.
+Fresh start ke baad pehla hissa:
+
+- [`music-api/`](music-api/) — BloomeeTunes ke plugin contract par bani
+  ek unified Music REST API (JioSaavn + YouTube Music sources).

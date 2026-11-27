@@ -1,0 +1,37 @@
+{
+  "new_trending": {
+    "0": [
+      {
+        "id": "T1",
+        "title": "Trending Song",
+        "album": "Hits",
+        "primary_artists": "Someone",
+        "image": "https://c.saavncdn.com/000/trend-150x150.jpg",
+        "type": "song",
+        "more_info": { "album_id": "900", "duration": "200", "explicit_content": 0 }
+      }
+    ]
+  },
+  "new_albums": [
+    {
+      "id": "AL1",
+      "title": "New Album",
+      "year": "2024",
+      "primary_artists": "The Artist",
+      "image": "https://c.saavncdn.com/000/album-150x150.jpg",
+      "type": "album",
+      "more_info": { "song_count": "10" }
+    }
+  ],
+  "charts": [
+    {
+      "id": "CH1",
+      "title": "Top 50 Hindi",
+      "image": "https://c.saavncdn.com/000/chart-150x150.jpg",
+      "type": "playlist",
+      "more_info": { "song_count": "50" }
+    }
+  ],
+  "featured_playlists": [],
+  "top_playlists": []
+}

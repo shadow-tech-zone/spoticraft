@@ -1,0 +1,12 @@
+{
+  "name": "music-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One unified REST API for music — BloomeeTunes ke plugin contract (search/home/details/streams/radio/charts/lyrics) par, JioSaavn + YouTube Music sources ke saath.",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  }
+}

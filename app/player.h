@@ -19,7 +19,9 @@ public:
     bool IsPaused() const { return m_paused.load(); }
     bool IsPlaying() const { return m_playing.load(); }
     bool HasMedia() const { return m_hasMedia.load(); }
-    void Stop();
+    /** join=true sirf shutdown par; warna reaper thread purana feed band karta hai
+        (sync ReadSample network par atka ho to UI hang na ho). */
+    void Stop(bool join = false);
     void Seek(double seconds);
     void SetVolume(float v01);
     double Position() const { return m_position.load(); }

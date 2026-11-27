@@ -30,7 +30,7 @@ void Player::Init() {
 }
 
 void Player::Shutdown() {
-    Stop();
+    Stop(true);
     ReleaseAll();
     if (m_started) { MFShutdown(); m_started = 0; }
 }
@@ -43,9 +43,17 @@ void Player::ReleaseAll() {
     Rel((IMMDevice*&)m_device);
 }
 
-void Player::Stop() {
+void Player::Stop(bool join) {
     m_gen++;
-    if (m_thread.joinable()) m_thread.join();
+    if (m_thread.joinable()) {
+        if (join) m_thread.join();
+        else {
+            /* purana thread gen mismatch par khud niklega; ReadSample atka
+               ho to bhi UI aage badhe */
+            std::thread old = std::move(m_thread);
+            std::thread([o = std::move(old)]() mutable { o.join(); }).detach();
+        }
+    }
     m_playing = false; m_paused = false; m_hasMedia = false;
     m_position = 0; m_duration = 0; m_positionBase = 0;
 }
@@ -94,12 +102,16 @@ void Player::LoadThread(std::string url, int gen) {
     m_reader = reader;
     m_hasMedia = true;
     if (!EnsureWasapi()) {
+        m_reader = nullptr;
+        reader->Release();
         PostMessageW(g_mainWnd, WM_APP_PLAYER, 3, 0);
         CoUninitialize();
         return;
     }
     IAudioClient* ac = (IAudioClient*)m_audioClient;
     if (FAILED(ac->Start())) {
+        m_reader = nullptr;
+        reader->Release();
         PostMessageW(g_mainWnd, WM_APP_PLAYER, 3, 0);
         CoUninitialize();
         return;
@@ -107,6 +119,9 @@ void Player::LoadThread(std::string url, int gen) {
     m_playing = true; m_paused = false;
     PostMessageW(g_mainWnd, WM_APP_PLAYER, 1, 0);
     FeedLoop(gen);
+    /* apna reader khud release; naya load chal raha ho to m_reader us ka hai */
+    if (m_reader == reader) m_reader = nullptr;
+    reader->Release();
 }
 
 bool Player::EnsureWasapi() {

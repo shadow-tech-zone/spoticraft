@@ -177,15 +177,14 @@ static float g_contentH = 0;
 static D2D1_COLOR_F Darken(const D2D1_COLOR_F& c, float f) { return {c.r * f, c.g * f, c.b * f, c.a}; }
 
 /* dominant-ish average color — async decode (study §5.2 hero rule) */
+struct TintMsg { std::string url; std::vector<uint8_t> bytes; };
 static void FetchTint(const std::string& url) {
     if (url.empty() || url == g.detailTintFor) return;
     g.detailTintFor = url;
     RunAsync([url]() {
-        std::vector<uint8_t> bytes;
-        if (!net::GetBytes(url, bytes) || bytes.empty()) return;
-        /* decode on small surface on UI thread later; yahan raw save */
-        auto* hold = new std::vector<uint8_t>(std::move(bytes));
-        PostMessageW(g_mainWnd, WM_APP + 70, (WPARAM)hold, 0);
+        auto* msg = new TintMsg{url, {}};
+        if (!net::GetBytes(url, msg->bytes) || msg->bytes.empty()) { delete msg; return; }
+        PostMessageW(g_mainWnd, WM_APP + 70, (WPARAM)msg, 0);
     }, [] {});
 }
 
@@ -443,6 +442,10 @@ static void LoadView() {
         return;
     }
     if (v.kind == PageKind::Home && g.homeLoaded) { g.loading = false; g.sections = g.homeCache; return; }
+    if (v.kind == PageKind::Search && v.query.empty()) {
+        g.loading = false; g.sections.clear(); g.search = {}; g_ui.Redraw();
+        return;
+    }
     RunAsync([v, src, gen]() {
         auto* r = new LoadedResult();
         switch (v.kind) {
@@ -1323,10 +1326,12 @@ static LRESULT CALLBACK EditProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
 
 /* ════════════════ tint (hero average color) ════════════════ */
 static IWICImagingFactory* g_wic = nullptr;
-static void ApplyTintBytes(std::vector<uint8_t>* bytes) {
-    std::unique_ptr<std::vector<uint8_t>> hold(bytes);
-    if (!g_wic || !hold || hold->empty()) return;
-    IStream* stream = SHCreateMemStream(hold->data(), (UINT)hold->size());
+static void ApplyTintBytes(TintMsg* raw) {
+    std::unique_ptr<TintMsg> hold(raw);
+    /* detail badal gaya ho to purana tint mustarad */
+    if (!hold || hold->url != g.detailTintFor) return;
+    if (!g_wic || hold->bytes.empty()) return;
+    IStream* stream = SHCreateMemStream(hold->bytes.data(), (UINT)hold->bytes.size());
     if (!stream) return;
     IWICBitmapDecoder* dec = nullptr;
     if (SUCCEEDED(g_wic->CreateDecoderFromStream(stream, nullptr, WICDecodeMetadataCacheOnLoad, &dec))) {
@@ -1644,7 +1649,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
             g_ui.Redraw();
             return 0;
         }
-        case WM_APP + 70: ApplyTintBytes((std::vector<uint8_t>*)wp); return 0;
+        case WM_APP + 70: ApplyTintBytes((TintMsg*)wp); return 0;
         case WM_APP + 71: {
             std::unique_ptr<StreamResult> res((StreamResult*)wp);
             if (res && !res->url.empty() && res->forId == g.pendingStreamId && g.hasCurrent &&
@@ -2102,6 +2107,15 @@ static void PaintHomePage(const DRect& area) {
 static void PaintDetailPage(const DRect& area) {
     bool liked = g.view.kind == PageKind::Liked;
     bool local = g.view.kind == PageKind::LocalPlaylist;
+    if (g.loading && !g.view.title.empty() && !liked && !local) {
+        /* loading ke dauran pichle page ka title na dikhe */
+        std::string artLoad;
+        g_ui.FillRect(R(area.left, area.top, area.right, area.top + 232), color::Hex(0x1c1c1c));
+        g_ui.Text(g.view.title, R(area.left + 24, area.top + 120, area.right - 24, area.top + 168), 34, TW::Black);
+        g_ui.Text("Loading...", R(area.left + 24, area.top + 176, area.right - 24, area.top + 200), 13, TW::Regular, color::textSubdued);
+        g_contentH = 320;
+        return;
+    }
     std::string title = liked ? "Liked Songs" : local ? (Lib().FindPlaylist(g.view.id) ? Lib().FindPlaylist(g.view.id)->name : std::string("Playlist"))
                           : !g.playlist.title.empty() ? g.playlist.title : g.album.title;
     std::string sub = liked ? "Your liked tracks" : local ? "Local playlist" : !g.playlist.title.empty() ? (!g.playlist.author.empty() ? g.playlist.author : std::string("Playlist")) : g.album.ArtistText();

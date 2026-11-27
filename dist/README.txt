@@ -1,26 +1,35 @@
-Bloomee v0.1.2 — test build (cover fixes) (native C++ Win32 + Direct2D, single EXE)
+Bloomee v0.2.0 — Electron Desktop App (Windows)
+================================================
 
-CHALANA
-  Bloomee.exe double-click karo. Kuch install nahi karna.
-  Windows 10/11 x64 chahiye, internet chahiye (music streaming).
-  Unsigned build hai — SmartScreen aaye to "More info" → "Run anyway".
+Ye naya build hai — purana C++/Direct2D wala build hata diya gaya hai.
+Study (docs/how-desktop-apps-are-built.md) ke baad stack Electron chuna
+gaya: Spotify khud bhi Chromium UI hi use karta hai.
 
-TEST CHECKLIST (5 min)
-  1. App khule, Home par sections load hon (default source: JioSaavn)
-  2. Koi bhi gaana: play / pause / seekbar drag / volume slider
-  3. Player ke right side Queue + Lyrics buttons; kisi track par right-click
-     (Play next / Add to playlist / Start radio / Like)
-  4. Upar search mein likho — suggestions aani chahiyein; Enter → results
-  5. Top-right ⋯ menu → Source: YouTube Music — phir Home dobara load hoga
-  6. Fullscreen lyrics: player ke right-most corner button
-  7. Window resize / maximize / minimize — system tray mein Bloomee icon
-     (tray right-click: Play/Pause, Next, Exit; double-click: wapas kholo)
-  8. App band karke dobara kholo — akhri gaana paused haal mein wapas aaye
+DOWNLOAD (GitHub Actions artifact)
+----------------------------------
+1. Ye run kholo:
+   https://github.com/shadow-tech-zone/spoticraft/actions/runs/46049045331
+2. Neeche "Artifacts" mein "Bloomee-Windows" download karo (zip, ~221MB)
+3. Zip kholo, do files milengi:
+   - Bloomee-Setup-0.2.0.exe      → installer (Start menu shortcut ke saath)
+   - Bloomee-Portable-0.2.0.exe   → bina install, direct chalne wala
 
-MASLA HO TO
-  App ke ⋯ menu → "Logs kholo" → bloomee.log bhej do,
-  saath bata do kis step par masla hua.
+Unsigned app hai — Windows SmartScreen aaye to
+"More info" → "Run anyway" dabana.
 
-SHA256
-  Bloomee.exe        76cae85443846991194e830b2c0a96d2a429390bb6b5323bd88912906ea4baf6
-  Bloomee-win64.zip  e42d0d807a8a8f7508c08dcb718c598f678c42fdfaa6e7a32913cb3c03e5e422
+TEST CHECKLIST
+--------------
+- Home: greeting + Trending/sections, covers load hone chahiye
+- Search: gaana likho, suggestions aayengi, Enter → results
+- Play: kisi row/card par click — gaana chalna chahiye
+- Album/Playlist/Artist kholo — hero cover tint + gaane
+- Dil (♡) → Liked Songs sidebar mein count badhega
+- Queue (☰) aur Lyrics (♪) — neeche right ke buttons
+- ⛶ → fullscreen synced lyrics
+- Restart ke baad last gaana player mein wapas aayega (paused)
+- Tray icon: right-click → Play/Pause/Next/Exit
+
+Masla ho to: title bar ke ••• → "Open logs" (bloomee.log khulega),
+ya %APPDATA%\Bloomee\bloomee.log bhej do screenshot ke saath.
+
+Data: %APPDATA%\Bloomee\library.json (likes, playlists, settings)

@@ -709,8 +709,23 @@ async function menuAction(id) {
   else if (id === 'm-queue') { S.upNext.push(t); toast('Queue mein dala'); }
   else if (id === 'm-like') await toggleLike(t);
   else if (id === 'm-radio') {
-    const items = await api.radio(t.id);
-    const tracks = items?.items || items || [];
+    let tracks = [];
+    try {
+      const items = await api.radio(t.id);
+      tracks = items?.items || items || [];
+    } catch { /* doosra source neeche */ }
+    if (!tracks.length) {
+      /* cross-source radio: wahi gaana doosre source par, wahan ka radio */
+      try {
+        const other = t.id.startsWith('ytmusic::') ? 'jiosaavn' : 'ytmusic';
+        const s = await api.search(other, `${t.title} ${t.artists?.[0]?.name || ''}`, 'track', 1);
+        const cand = s?.items?.[0];
+        if (cand) {
+          const items = await api.radio(cand.id);
+          tracks = items?.items || items || [];
+        }
+      } catch { /* radio nahi mila */ }
+    }
     if (tracks.length) { playContext(tracks, 0, 'radio'); toast('Song radio chal gaya'); }
     else toast('Radio nahi mila');
   }

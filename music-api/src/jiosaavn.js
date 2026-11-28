@@ -71,6 +71,17 @@ function artistToArtist(a) {
 
 const mapList = (arr, fn) => (Array.isArray(arr) ? arr.map(fn).filter(Boolean) : []);
 
+/* launch data mixed hota hai (song/album/playlist/artist) — type se
+   sahi shape do, warna album bhi "track" banke 0:00 duration dikhata hai */
+function launchItem(it) {
+  if (!it) return null;
+  const type = String(it.type || '').toLowerCase();
+  if (type === 'album') return albumToAlbum(it);
+  if (type === 'playlist') return playlistToPlaylist(it);
+  if (type === 'artist') return artistToArtist(it);
+  return songToTrack(it);
+}
+
 async function getLaunchData() {
   const d = await api('webapi.getLaunchData');
   return d || {};
@@ -87,7 +98,7 @@ export const jiosaavn = {
       ? Object.values(d.new_trending).flatMap(v => (Array.isArray(v) ? v : []))
       : d.new_trending;
     const push = (title, items) => { if (items.length) sections.push({ title, items }); };
-    push('Trending Now', mapList(trending, songToTrack));
+    push('Trending Now', mapList(trending, launchItem));
     push('New Releases', mapList(d.new_albums, albumToAlbum));
     push('Charts', mapList(d.charts, playlistToPlaylist));
     push('Featured Playlists', mapList(d.featured_playlists, playlistToPlaylist));

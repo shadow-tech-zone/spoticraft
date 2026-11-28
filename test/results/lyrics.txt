@@ -1,0 +1,7 @@
+Bloomee LIVE lyrics test — 2026-11-28T07:45:20.421Z
+  ✓ lyrics mile: source=lrclib synced=46 lines, plain=944 chars
+  ✓ pehli synced line [undefineds]: "Hum tere bin ab reh nahi sakte"
+  ✓ aakhri synced line [undefineds]: ""
+
+══ RESULT: ALL PASS ✓ ══
+EXIT=0

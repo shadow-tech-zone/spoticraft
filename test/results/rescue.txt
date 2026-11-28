@@ -1,4 +1,4 @@
-Bloomee APP-PATH (resolver) test — 2026-11-28T07:35:32.488Z
+Bloomee APP-PATH (resolver) test — 2026-11-28T07:45:17.838Z
 
 ── JioSaavn gaana (app jaisa): "Tu Mil Jaaye (From "KING")" (jiosaavn::QcfFd62t)
     log: streams ok jiosaavn QcfFd62t 3 variants
@@ -6,10 +6,10 @@ Bloomee APP-PATH (resolver) test — 2026-11-28T07:35:32.488Z
     bytes: HTTP 206 type=audio/mp4 n=4096
   ✓ PLAYABLE
 
-── YT Music gaana (app jaisa): "Dhun (Movie: Saiyaara)" (ytmusic::Wqu4MRQOgyo)
-    log: streams primary fail ytmusic Wqu4MRQOgyo no playable stream found [IOS:LOGIN_REQUIRED Sign in to confirm you’re not a bot | ANDROID_VR:LOGIN_REQUIRED Sign in to confirm you’re not a bot]
-    log: streams fallback ok jiosaavn jiosaavn::gQsV3EzG score-match
-    resolved via=jiosaavn-fallback matched="Dhun (From "Saiyaara")" variants=3
+── YT Music gaana (app jaisa): "Ilahi" (ytmusic::lSPNH_rYKIg)
+    log: streams primary fail ytmusic lSPNH_rYKIg no playable stream found [IOS:LOGIN_REQUIRED Sign in to confirm you’re not a bot | ANDROID_VR:LOGIN_REQUIRED Sign in to confirm you’re not a bot]
+    log: streams fallback ok jiosaavn jiosaavn::4CI_0bzt score-match
+    resolved via=jiosaavn-fallback matched="Ilahi" variants=3
     bytes: HTTP 206 type=audio/mp4 n=4096
   ✓ PLAYABLE
 

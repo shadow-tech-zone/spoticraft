@@ -1,6 +1,6 @@
 ── YT search raw ("Arijit Singh") ──
 top keys: responseContext,contents,trackingParams
-sections=28
+sections=30
   [0] musicCardShelfRenderer
   [1] itemSectionRenderer
   [2] itemSectionRenderer
@@ -11,7 +11,7 @@ sections=28
   [7] itemSectionRenderer
   [8] itemSectionRenderer
   [9] itemSectionRenderer
-  [10] musicShelfRenderer title="Profiles" items=3
+  [10] itemSectionRenderer
   [11] itemSectionRenderer
   [12] itemSectionRenderer
   [13] itemSectionRenderer
@@ -29,13 +29,13 @@ sections=28
   [25] itemSectionRenderer
   [26] itemSectionRenderer
   [27] itemSectionRenderer
-first shelf item keys: musicResponsiveListItemRenderer
-first item JSON (1200 chars): {"musicResponsiveListItemRenderer":{"trackingParams":"CIwCEIGsChgAIhMIqe7A3JWqmAMVVNDnAx0i7hGR","thumbnail":{"musicThumbnailRenderer":{"thumbnail":{"thumbnails":[{"url":"https://yt3.googleusercontent.com/wCQPY38YDlB_2n8z_bQDDMuD5A-k-OTj3LEXON2_Uqsj9Z-wGlt_QapMZd3sPzCb6e8QEx7hnA=w60-c-h60-k-c0x00ffffff-no-l90-rj","width":60,"height":60},{"url":"https://yt3.googleusercontent.com/wCQPY38YDlB_2n8z_bQDDMuD5A-k-OTj3LEXON2_Uqsj9Z-wGlt_QapMZd3sPzCb6e8QEx7hnA=w120-c-h120-k-c0x00ffffff-no-l90-rj","width":120,"height":120}]},"thumbnailCrop":"MUSIC_THUMBNAIL_CROP_CIRCLE","thumbnailScale":"MUSIC_THUMBNAIL_SCALE_ASPECT_FILL","trackingParams":"CI8CEIS_AiITCKnuwNyVqpgDFVTQ5wMdIu4RkQ=="}},"flexColumns":[{"musicResponsiveListItemFlexColumnRenderer":{"text":{"runs":[{"text":"Love Arijit Singh"}]},"displayPriority":"MUSIC_RESPONSIVE_LIST_ITEM_COLUMN_DISPLAY_PRIORITY_HIGH"}},{"musicResponsiveListItemFlexColumnRenderer":{"text":{"runs":[{"text":"Profile"},{"text":" • "},{"text":"@LoveArijitSingh85"}],"accessibility":{"accessibilityData":{"label":"Profile • @LoveArijitSingh85"}}},"displayPriority":"MUSIC_RESPONSIVE_LIST_ITEM_COLUMN_DISPLAY_PRIORITY_HIGH"}}],"menu":{"menuRenderer":{"items":[{"menuNavigati
+  [28] itemSectionRenderer
+  [29] itemSectionRenderer
 
 ── ytmusic.search() parsed ──
 tracks=10 albums=4 playlists=6 artists=6
 first track: ytmusic::lSPNH_rYKIg Ilahi
 
 ── known video stream test (dQw4w9WgXcQ) ──
-streams=5 top=137kbps rr1---sn-qja5mc-5w.googlevideo.com
+streams=5 top=137kbps rr4---sn-vgqsrnld.googlevideo.com
 bytes: HTTP 206 type=audio/webm n=1024

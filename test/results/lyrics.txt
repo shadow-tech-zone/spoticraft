@@ -1,7 +1,7 @@
-Bloomee LIVE lyrics test — 2026-11-28T07:45:20.421Z
+Bloomee LIVE lyrics test — 2026-11-28T07:51:09.266Z
   ✓ lyrics mile: source=lrclib synced=46 lines, plain=944 chars
-  ✓ pehli synced line [undefineds]: "Hum tere bin ab reh nahi sakte"
-  ✓ aakhri synced line [undefineds]: ""
+  ✓ pehli synced line [11.2s]: "Hum tere bin ab reh nahi sakte"
+  ✓ aakhri synced line [239.7s]: "Meri aashiqui ab tum hi ho"
 
 ══ RESULT: ALL PASS ✓ ══
 EXIT=0

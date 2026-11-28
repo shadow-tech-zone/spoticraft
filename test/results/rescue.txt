@@ -1,4 +1,4 @@
-Bloomee APP-PATH (resolver) test — 2026-11-28T08:00:58.417Z
+Bloomee APP-PATH (resolver) test — 2026-11-28T08:28:36.122Z
 
 ── JioSaavn gaana (app jaisa): "Tu Mil Jaaye (From "KING")" (jiosaavn::QcfFd62t)
     log: streams ok jiosaavn QcfFd62t 3 variants
@@ -12,6 +12,8 @@ Bloomee APP-PATH (resolver) test — 2026-11-28T08:00:58.417Z
     resolved via=jiosaavn-fallback matched="Ilahi" variants=3
     bytes: HTTP 206 type=audio/mp4 n=4096
   ✓ PLAYABLE
+  ⚠ radio jiosaavn warn: upstream HTTP 500 for www.jiosaavn.com
+  ✓ radio ytmusic: 50 items
 
 ══ RESULT: ALL PASS ✓ ══
 EXIT=0

@@ -7,4 +7,6 @@ SHOT playing.png
 SHOT queue.png
 SHOT now.png
 SHOT lyrics.png
+SHOT charts.png
+SHOT fslyrics.png
 SHOTS_OK

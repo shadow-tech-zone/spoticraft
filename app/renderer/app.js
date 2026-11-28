@@ -155,7 +155,7 @@ function rowHTML(t, idx, ctxJson) {
   </div>`;
 }
 const rowsHTML = (tracks) => {
-  const ctx = esc(JSON.stringify(tracks.map(t => t.id)));
+  const ctx = JSON.stringify(tracks.map(t => t.id)); /* esc sirf rowHTML mein ek dafa — do dafa laga to JSON kharab, row-click mar jata hai */
   return tracks.map((t, i) => rowHTML(t, i, ctx)).join('');
 };
 const colHead = `<div class="colhead"><span style="text-align:center">#</span><span>Title</span><span>Album</span><span style="text-align:right">Duration</span></div>`;

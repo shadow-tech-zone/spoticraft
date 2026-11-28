@@ -77,3 +77,4 @@ jobs:
         run: |
           grep -q "ALL PASS" test/results/rescue.txt
           grep -q '"ok":true' test/results/smoke.txt
+          grep -qE 'PLAY_STATE ".+"' test/results/shots-log.txt

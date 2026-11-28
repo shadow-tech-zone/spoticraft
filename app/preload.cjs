@@ -37,4 +37,6 @@ contextBridge.exposeInMainWorld('bloomee', {
   openLogs: () => call('app:openLogs'),
   info: () => call('app:info'),
   quit: () => call('app:quit'),
+  openExternal: (url) => call('app:openExternal', url),
+  onUpdate: (cb) => ipcRenderer.on('app:update', (_e, d) => cb(d)),
 });

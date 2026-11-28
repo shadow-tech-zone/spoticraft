@@ -1,4 +1,4 @@
-Bloomee v0.2.5 — Electron Desktop App (Windows)
+Bloomee v0.3.0 — Electron Desktop App (Windows)
 ================================================
 
 Ye naya build hai — purana C++/Direct2D wala build hata diya gaya hai.
@@ -11,8 +11,8 @@ DOWNLOAD (GitHub Actions artifact)
    https://github.com/shadow-tech-zone/spoticraft/actions/workflows/build-windows.yml
 2. Neeche "Artifacts" mein "Bloomee-Windows" download karo (zip, ~221MB)
 3. Zip kholo, do files milengi:
-   - Bloomee-Setup-0.2.5.exe      → installer (Start menu shortcut ke saath)
-   - Bloomee-Portable-0.2.5.exe   → bina install, direct chalne wala
+   - Bloomee-Setup-0.3.0.exe      → installer (Start menu shortcut ke saath)
+   - Bloomee-Portable-0.3.0.exe   → bina install, direct chalne wala
 
 Unsigned app hai — Windows SmartScreen aaye to
 "More info" → "Run anyway" dabana.

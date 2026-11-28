@@ -1,6 +1,6 @@
 {
   "name": "bloomee",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "private": true,
   "description": "Bloomee — Spotify-measured native Windows desktop music app (Electron).",
   "type": "module",

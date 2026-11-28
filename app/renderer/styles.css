@@ -206,7 +206,7 @@ img { display: block; }
 #rightpanel { padding: 13px 15px; }
 .rp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .rp-tabs { display: flex; gap: 6px; background: rgba(255,255,255,.06); padding: 3px; border-radius: 999px; }
-.rp-tab { padding: 5px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: var(--t-sub); }
+.rp-tab { padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--t-sub); white-space: nowrap; }
 .rp-tab.on { background: var(--subdued); color: var(--t-base); }
 #rp-body { overflow-y: auto; flex: 1; }
 .rp-sec { font-size: 13px; font-weight: 700; color: var(--t-sub); margin: 14px 0 7px; }
@@ -340,3 +340,15 @@ img { display: block; }
 .vol-ic .ic { width: 19px; height: 19px; }
 .qrow .x { display: grid; place-items: center; }
 .qrow .x .ic { width: 13px; height: 13px; }
+
+/* now playing (player bar cover button + right panel bada view) */
+.np-cover { padding: 0; border-radius: var(--r-hero); overflow: hidden; line-height: 0; flex: none; cursor: pointer; }
+.np-big { padding: 4px 2px; }
+.np-big img, .np-big-tile { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; }
+.np-big-tile { background: var(--elev-hi); display: grid; place-items: center; font-size: 64px; font-weight: 800; color: var(--t-sub); }
+.np-big-title { font-size: 19px; font-weight: 800; margin-top: 14px; line-height: 1.25; }
+.np-big-artist { color: var(--t-sub); font-size: 13.5px; margin-top: 5px; }
+.np-big-meta { color: var(--t-sub); font-size: 12px; margin-top: 8px; }
+.np-big-actions { display: flex; gap: 8px; align-items: center; margin-top: 14px; }
+.linklike { display: block; color: var(--t-sub); font-size: 13px; margin-top: 12px; text-align: left; padding: 0; }
+.linklike:hover { color: var(--t-base); text-decoration: underline; }

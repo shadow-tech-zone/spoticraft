@@ -11,6 +11,7 @@ on:
       - 'app/core/**'
       - 'test/playback.e2e.mjs'
       - 'test/rescue.e2e.mjs'
+      - 'test/lyrics.e2e.mjs'
       - 'test/debug-yt.mjs'
       - '.github/workflows/test-playback.yml'
 
@@ -37,6 +38,8 @@ jobs:
           node test/debug-yt.mjs > test/results/yt-debug.txt 2>&1 || true
           node test/rescue.e2e.mjs > test/results/rescue.txt 2>&1
           echo "EXIT=$?" >> test/results/rescue.txt
+          node test/lyrics.e2e.mjs > test/results/lyrics.txt 2>&1
+          echo "EXIT=$?" >> test/results/lyrics.txt
           cat test/results/latest.txt
           echo "----- RESCUE -----"
           cat test/results/rescue.txt
@@ -56,16 +59,14 @@ jobs:
           set +e
           (cd app && BLOOMEE_SHOTS=1 xvfb-run -a npx electron . --no-sandbox --disable-gpu > ../shots-out.txt 2>&1)
           mkdir -p test/results/shots
-          cp app/shots-home.png test/results/shots/home.png 2>/dev/null || tail -5 shots-out.txt
-          cp app/shots-detail.png test/results/shots/detail.png 2>/dev/null || true
-          cp app/shots-search.png test/results/shots/search.png 2>/dev/null || true
+          cp app/home.png app/detail.png app/search.png app/playing.png app/queue.png app/now.png app/lyrics.png test/results/shots/ 2>/dev/null || tail -5 shots-out.txt
 
       - name: Commit results
         if: always()
         run: |
           git config user.name "bloomee-ci"
           git config user.email "ci@bloomee.local"
-          git add test/results/latest.txt test/results/yt-debug.txt test/results/rescue.txt test/results/smoke.txt test/results/shots
+          git add test/results/latest.txt test/results/yt-debug.txt test/results/rescue.txt test/results/lyrics.txt test/results/smoke.txt test/results/shots
           git commit -m "test results [skip ci]" || echo "nothing new"
           git pull --rebase origin arena/09cac133-spoticraft || true
           git push origin HEAD:arena/09cac133-spoticraft

@@ -71,7 +71,7 @@ function refreshLikeUI(id) {
     b.classList.toggle('liked', on);
     b.innerHTML = heartIc(on);
   });
-  if (S.current?.id === id) renderNpLeft();
+  if (S.current?.id === id) { renderNpLeft(); renderNowPanel(); }
 }
 
 /* ════════════ navigation ════════════ */
@@ -360,6 +360,8 @@ async function pageCharts(el) {
 function pageSettings(el) {
   const s = S.lib.settings;
   el.innerHTML = `<h1 class="greet">Settings</h1>
+    ${S.update ? `<div class="setrow"><div><b>Update available — ${esc(S.update.version)}</b><div style="color:var(--t-sub);font-size:12.5px;margin-top:3px">Naya version GitHub par tayyar hai</div></div>
+      <button class="btn primary" data-act="open-update">Download</button></div>` : ''}
     <div class="setrow"><div><b>Music source</b><div style="color:var(--t-sub);font-size:12.5px;margin-top:3px">JioSaavn tez streams, YouTube Music bara catalog</div></div>
       <div class="chips">${['jiosaavn', 'ytmusic'].map(x => `<button class="chip ${S.source === x ? 'on' : ''}" data-act="src" data-src="${x}">${x === 'jiosaavn' ? 'JioSaavn' : 'YouTube Music'}</button>`).join('')}</div></div>
     <div class="setrow"><div><b>Close button minimizes to tray</b><div style="color:var(--t-sub);font-size:12.5px;margin-top:3px">Spotify jaisa — band karne par tray mein chala jayega</div></div>
@@ -500,11 +502,12 @@ function renderNpLeft() {
   const t = S.current;
   const el = $('#np-left');
   if (!t) { el.innerHTML = ''; return; }
-  el.innerHTML = `${artUrl(t) ? `<img src="${esc(artUrl(t))}" alt="" data-fb="np-tile" data-ch="${esc(t.title.slice(0, 1))}">` : `<div class="np-tile">${esc(t.title.slice(0, 1))}</div>`}
-    <div style="min-width:0"><div class="np-title">${esc(t.title)}</div><div class="np-artist">${esc(artistsText(t))}</div></div>
+  el.innerHTML = `<button class="np-cover" data-act="rp-now" title="Now Playing">${artUrl(t) ? `<img src="${esc(artUrl(t))}" alt="" data-fb="np-tile" data-ch="${esc(t.title.slice(0, 1))}">` : `<div class="np-tile">${esc(t.title.slice(0, 1))}</div>`}</button>
+    <div style="min-width:0" data-act="rp-now"><div class="np-title">${esc(t.title)}</div><div class="np-artist">${esc(artistsText(t))}</div></div>
     <button class="like-btn ${isLiked(t.id) ? 'liked' : ''}" style="opacity:1" data-act="like-cur" data-like="${esc(t.id)}">${heartIc(isLiked(t.id))}</button>`;
   paintPlayBtn();
   renderQueuePanel();
+  renderNowPanel();
 }
 function repaintPlayingRows() {
   $$('.trow').forEach(r => {
@@ -530,7 +533,9 @@ function openRp(tab) {
   $$('.rp-tab').forEach(b => b.classList.toggle('on', b.dataset.tab === S.rp.tab));
   $('#btn-rp-lyrics')?.classList.toggle('on', S.rp.open && S.rp.tab === 'lyrics');
   $('#btn-rp-queue')?.classList.toggle('on', S.rp.open && S.rp.tab === 'queue');
-  if (S.rp.tab === 'queue') renderQueuePanel(); else renderLyricsPanel();
+  if (S.rp.tab === 'queue') renderQueuePanel();
+  else if (S.rp.tab === 'lyrics') renderLyricsPanel();
+  else renderNowPanel();
 }
 function closeRp() {
   S.rp.open = false;
@@ -540,6 +545,29 @@ function closeRp() {
   $('#btn-rp-queue')?.classList.remove('on');
 }
 function toggleRp(tab) { (S.rp.open && S.rp.tab === tab) ? closeRp() : openRp(tab); }
+
+/* ── Now Playing view (Spotify jaisa bara cover + info) ── */
+function renderNowPanel() {
+  if (!S.rp.open || S.rp.tab !== 'now') return;
+  const body = $('#rp-body');
+  const t = S.current;
+  if (!t) { body.innerHTML = '<div class="center-msg"><h2>Pehle gaana chalao</h2></div>'; return; }
+  const art = artUrl(t);
+  const artistWithId = t.artists?.find(a => a.id);
+  body.innerHTML = `<div class="np-big">
+    ${art ? `<img src="${esc(art)}" alt="" data-fb="np-big-tile" data-ch="${esc(t.title.slice(0, 1))}">` : `<div class="np-big-tile">${esc(t.title.slice(0, 1))}</div>`}
+    <div class="np-big-title">${esc(t.title)}</div>
+    <div class="np-big-artist">${esc(artistsText(t))}</div>
+    <div class="np-big-meta">${t.album?.title ? esc(t.album.title) + ' • ' : ''}${fmt(t.durationMs)}${t.isExplicit ? ' • Explicit' : ''}</div>
+    <div class="np-big-actions">
+      <button class="iconbtn ${isLiked(t.id) ? 'on' : ''}" data-act="like-cur" title="Like">${heartIc(isLiked(t.id))}</button>
+      <button class="btn" data-act="np-queue">Queue</button>
+      <button class="btn" data-act="np-lyrics">Lyrics</button>
+    </div>
+    ${artistWithId ? `<button class="linklike" data-act="np-artist" data-id="${esc(artistWithId.id)}">${esc(artistWithId.name)} — artist page</button>` : ''}
+    ${t.album?.id ? `<button class="linklike" data-act="np-album" data-id="${esc(t.album.id)}">${esc(t.album.title)} — album page</button>` : ''}
+  </div>`;
+}
 
 function renderQueuePanel() {
   if (!S.rp.open || S.rp.tab !== 'queue') return;
@@ -826,6 +854,11 @@ document.addEventListener('click', async (e) => {
     }
     case 'rp-queue': toggleRp('queue'); break;
     case 'rp-lyrics': toggleRp('lyrics'); break;
+    case 'rp-now': openRp('now'); break;
+    case 'np-queue': openRp('queue'); break;
+    case 'np-lyrics': openRp('lyrics'); break;
+    case 'np-artist': navigate({ kind: 'artist', id: el.dataset.id }); break;
+    case 'np-album': navigate({ kind: 'list', id: el.dataset.id, isAlbum: true }); break;
     case 'rp-tab': openRp(el.dataset.tab); break;
     case 'rp-close': closeRp(); break;
     case 'fs-lyrics': S.fsLyrics = true; renderFsLyrics(); break;
@@ -912,6 +945,7 @@ document.addEventListener('click', async (e) => {
       break;
     }
     case 'open-logs': window.bloomee.openLogs(); break;
+    case 'open-update': window.bloomee.openExternal(S.update?.url || 'https://github.com/shadow-tech-zone/spoticraft/releases'); break;
     case 'modal-cancel': closeModal(); break;
   }
 });
@@ -1033,6 +1067,11 @@ $('#main').addEventListener('scroll', () => {
   if (sh && hero) sh.classList.toggle('show', $('#main').scrollTop > hero.offsetHeight - 90);
 });
 $('#rp-body').addEventListener('scroll', () => { S.userScrollLyr = Date.now(); });
+window.bloomee.onUpdate((d) => {
+  S.update = d;
+  toast(`Bloomee ${d.version} aa gaya hai — Settings mein download link hai`, 9000);
+  if (S.view.kind === 'settings') pageSettings($('#view'));
+});
 window.bloomee.playerCmd((cmd) => {
   if (cmd === 'toggle' && S.current) audio.paused ? audio.play() : audio.pause();
   else if (cmd === 'next') next(true);

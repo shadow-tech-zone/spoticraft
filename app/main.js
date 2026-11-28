@@ -15,7 +15,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = !app.isPackaged;
 const SMOKE = !!process.env.BLOOMEE_SMOKE;
 const SHOTS = !!process.env.BLOOMEE_SHOTS;
-if (SMOKE) app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+if (SMOKE || SHOTS) app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 /* ── log: userData/bloomee.log ── */
 let logStream = null;
@@ -114,15 +114,28 @@ async function runShots(w) {
   };
   try {
     await waitFor('.card,.trow');
-    await shot('shots-home.png');
+    await shot('home.png');
     /* pehla card kholo → detail page */
     await exec(`document.querySelector('.card')?.click()`);
     await waitFor('#hero,.trow');
-    await shot('shots-detail.png');
+    await shot('detail.png');
     /* search page */
     await exec(`(function(){const i=document.querySelector('#search'); i.focus(); i.value='Arijit Singh'; i.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));})()`);
     await waitFor('.trow,.card');
-    await shot('shots-search.png');
+    await shot('search.png');
+    /* pehla gaana chalao → playback state wale panels */
+    await exec(`document.querySelector('.trow')?.click()`);
+    await waitFor('#np-left .np-title', 30);
+    await shot('playing.png', 2500);
+    await exec(`document.querySelector('#btn-rp-queue')?.click()`);
+    await waitFor('.qrow', 20);
+    await shot('queue.png');
+    await exec(`document.querySelector('[data-tab="now"]')?.click()`);
+    await waitFor('.np-big', 20);
+    await shot('now.png');
+    await exec(`document.querySelector('[data-tab="lyrics"]')?.click()`);
+    await waitFor('.lyr-line', 40);
+    await shot('lyrics.png', 1800);
     console.log('SHOTS_OK');
   } catch (e) { console.log('SHOTS_FAIL ' + (e?.message || e)); }
   app.exit(0);
@@ -154,6 +167,8 @@ async function runSmoke(w) {
     const s2 = await unwrap(window.bloomee.api.search('ytmusic', 'Arijit Singh', 'track', 1));
     const st2 = await unwrap(window.bloomee.api.streams(s2.items[0]));
     out.ytm = { title: s2.items[0].title, via: st2.via, ...(await play(st2.streams[0].url)) };
+    const lyr = await unwrap(window.bloomee.api.lyrics(s1.items[0])).catch(() => null);
+    out.lyrics = { found: !!(lyr && (lyr.plain || lyr.synced?.length)), syncedLines: lyr?.synced?.length || 0 };
     out.ok = [out.saavn, out.ytm].every(p => p.duration > 30 && p.t1 > p.t0 && !p.paused);
     return out;
   })()`;
@@ -277,6 +292,31 @@ function registerIpc() {
   ipcMain.handle('win:isMax', () => !!win?.isMaximized());
   ipcMain.handle('app:openLogs', () => shell.openPath(path.join(app.getPath('userData'), 'bloomee.log')));
   ipcMain.handle('app:info', () => ({ version: app.getVersion(), platform: process.platform }));
+  ipcMain.handle('app:quit', () => { app.isQuitting = true; app.quit(); });
+  ipcMain.handle('app:openExternal', (_e, url) => {
+    if (/^https:\/\/github\.com\//.test(String(url))) return shell.openExternal(url);
+  });
+}
+
+/* ── auto-update check: GitHub latest release vs app version ── */
+function isNewer(a, b) {
+  const pa = String(a).split('.').map(Number), pb = String(b).split('.').map(Number);
+  for (let i = 0; i < 3; i++) if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) > (pb[i] || 0);
+  return false;
+}
+async function checkUpdate() {
+  try {
+    const r = await fetch('https://api.github.com/repos/shadow-tech-zone/spoticraft/releases/latest', {
+      headers: { 'user-agent': 'Bloomee', accept: 'application/vnd.github+json' },
+    });
+    if (!r.ok) return;
+    const j = await r.json();
+    const latest = String(j.tag_name || '').replace(/^v/, '');
+    if (latest && isNewer(latest, app.getVersion())) {
+      log('update available', latest, 'current', app.getVersion());
+      win?.webContents.send('app:update', { version: `v${latest}`, url: j.html_url });
+    }
+  } catch (e) { log('update check fail', e.message); }
 }
 
 /* ── boot ── */
@@ -292,6 +332,7 @@ app.whenReady().then(() => {
 
   registerIpc();
   createWindow();
+  if (!SMOKE && !SHOTS) setTimeout(checkUpdate, 4000);
   buildTray();
 
   app.on('activate', showWindow);

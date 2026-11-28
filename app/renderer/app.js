@@ -248,7 +248,11 @@ async function pageSearch(el) {
     if (data.playlists?.length) html += `<h2 class="sec-title">Playlists</h2><div class="cards">${data.playlists.map(cardHTML).join('')}</div>`;
     if (data.artists?.length) html += `<h2 class="sec-title">Artists</h2><div class="cards">${data.artists.map(cardHTML).join('')}</div>`;
   } else if (v.filter === 'track') {
-    html = `<h2 class="sec-title">Songs</h2>${rowsHTML(data.items || [])}`;
+    S.searchTracks = data.items || [];
+    S.searchPage = 1;
+    html = `<h2 class="sec-title">Songs</h2><div id="sr-rows">${rowsHTML(S.searchTracks)}</div>`
+      + (S.source === 'jiosaavn' && S.searchTracks.length >= 20
+        ? `<button class="btn" data-act="more-songs" style="margin:16px auto 4px;display:block">Aur gaane dikhao</button>` : '');
   } else {
     html = `<div class="cards" style="margin-top:14px">${(data.items || []).map(cardHTML).join('')}</div>`;
   }
@@ -364,6 +368,8 @@ function pageSettings(el) {
       <button class="btn primary" data-act="open-update">Download</button></div>` : ''}
     <div class="setrow"><div><b>Music source</b><div style="color:var(--t-sub);font-size:12.5px;margin-top:3px">JioSaavn tez streams, YouTube Music bara catalog</div></div>
       <div class="chips">${['jiosaavn', 'ytmusic'].map(x => `<button class="chip ${S.source === x ? 'on' : ''}" data-act="src" data-src="${x}">${x === 'jiosaavn' ? 'JioSaavn' : 'YouTube Music'}</button>`).join('')}</div></div>
+    <div class="setrow"><div><b>Audio quality</b><div style="color:var(--t-sub);font-size:12.5px;margin-top:3px">High = 320kbps (data zyada), Low = 96kbps (data kam)</div></div>
+      <div class="chips">${[['auto', 'Auto'], ['320', 'High 320'], ['160', 'Medium 160'], ['96', 'Low 96']].map(([q, l]) => `<button class="chip ${(s.quality || 'auto') === q ? 'on' : ''}" data-act="quality" data-q="${q}">${l}</button>`).join('')}</div></div>
     <div class="setrow"><div><b>Close button minimizes to tray</b><div style="color:var(--t-sub);font-size:12.5px;margin-top:3px">Spotify jaisa — band karne par tray mein chala jayega</div></div>
       <button class="switch ${s.closeToTray ? 'on' : ''}" data-act="toggle-tray"></button></div>
     <div class="setrow"><div><b>Logs</b><div style="color:var(--t-sub);font-size:12.5px;margin-top:3px">Masla ho to bloomee.log kaam aayega</div></div>
@@ -388,6 +394,7 @@ async function playAt(idx, autoplay = true) {
   renderNpLeft(); renderQueuePanel(); repaintPlayingRows();
   window.bloomee.playerState({ playing: false, title: `${t.title} — ${artistsText(t)}` });
   libOp('touchRecent', { track: t }).then(() => window.bloomee.lib.get().then(d => { S.lib = d; renderSidebar(); }));
+  libOp('setSetting', { key: 'lastQueue', value: { items: S.queue.slice(0, 100), idx } });
   let res;
   try {
     res = await api.streams(t);
@@ -409,14 +416,28 @@ async function playAt(idx, autoplay = true) {
   refreshLyricsVisibility();
 }
 
+const kbpsOf = (s) => {
+  const m = String(s.quality || '').match(/(\d+)\s*kbps/i);
+  if (m) return Number(m[1]);
+  return s.bitrate ? Math.round(s.bitrate / 1000) : 0;
+};
 function pickStream(list) {
   if (!Array.isArray(list) || !list.length) return null;
-  for (const k of QUALITY_KEYS) {
-    const s = list.find(x => x.quality === k) || list.find(x => x.bitrate === k);
-    if (s?.url) return s.url;
-  }
-  const s = list.find(x => x.url);
-  return s?.url || null;
+  const withUrl = list.filter(s => s.url);
+  if (!withUrl.length) return null;
+  /* Settings ki quality cap: us se neeche ki behtareen, warna sab se halki */
+  const cap = { '320': 320, '160': 160, '96': 96 }[S.lib?.settings?.quality] || Infinity;
+  const sorted = [...withUrl].sort((a, b) => kbpsOf(b) - kbpsOf(a));
+  const under = sorted.filter(s => kbpsOf(s) > 0 && kbpsOf(s) <= cap);
+  return (under[0] || sorted[sorted.length - 1]).url;
+}
+
+/* play/pause ka ek hi rasta — restart ke baad src khaali ho to
+   pehle stream load karo (warna play dabana bekaar tha) */
+function togglePlay() {
+  if (!S.current) return;
+  if (!audio.src) { playAt(Math.max(0, S.queueIdx)); return; }
+  audio.paused ? audio.play() : audio.pause();
 }
 
 function maybeSkip(reason, msg) {
@@ -672,6 +693,7 @@ function trackMenuItems(t) {
     { id: 'm-like', label: isLiked(t.id) ? 'Remove from Liked Songs' : 'Save to Liked Songs', check: isLiked(t.id) },
   ];
   for (const p of S.lib.playlists) items.push({ id: `m-addpl:${p.id}`, label: `Add to “${p.name}”` });
+  if (S.view.kind === 'local') items.push({ id: 'm-removepl', label: 'Remove from this playlist', danger: true });
   items.push('hr', { id: 'm-radio', label: 'Go to song radio' });
   const art = t.artists?.find(a => a.id);
   if (art) items.push({ id: `m-artist:${art.id}`, label: `Go to artist — ${art.name}` });
@@ -691,6 +713,13 @@ async function menuAction(id) {
     const tracks = items?.items || items || [];
     if (tracks.length) { playContext(tracks, 0, 'radio'); toast('Song radio chal gaya'); }
     else toast('Radio nahi mila');
+  }
+  else if (id === 'm-removepl' && S.view.kind === 'local') {
+    await libOp('removeFromPlaylist', { id: S.view.id, trackId: t.id });
+    S.lib = await window.bloomee.lib.get();
+    renderSidebar();
+    render();
+    toast('Playlist se hataya');
   }
   else if (id.startsWith('m-addpl:')) {
     await libOp('addToPlaylist', { id: id.slice(8), track: t });
@@ -784,6 +813,19 @@ document.addEventListener('click', async (e) => {
       break;
     }
     case 'filter': navigate({ kind: 'search', query: S.view.query, filter: el.dataset.f }); break;
+    case 'more-songs': {
+      el.disabled = true; el.textContent = 'Load ho raha hai…';
+      try {
+        const d = await api.search(S.source, S.view.query, 'track', (S.searchPage || 1) + 1);
+        const items = d.items || [];
+        S.searchPage = (S.searchPage || 1) + 1;
+        S.searchTracks = [...(S.searchTracks || []), ...items];
+        const c = $('#sr-rows');
+        if (c) { c.innerHTML = rowsHTML(S.searchTracks); repaintPlayingRows(); }
+        if (items.length < 20) el.remove(); else { el.disabled = false; el.textContent = 'Aur gaane dikhao'; }
+      } catch (err) { el.disabled = false; el.textContent = 'Aur gaane dikhao'; toast(err.message); }
+      break;
+    }
     case 'clear-search': $('#search').value = ''; hideSuggest(); navigate({ kind: 'home' }); break;
 
     case 'open-item': {
@@ -832,7 +874,7 @@ document.addEventListener('click', async (e) => {
     }
     case 'menu-item': await menuAction(el.dataset.m); break;
 
-    case 'toggle': if (S.current) { audio.paused ? audio.play() : audio.pause(); } break;
+    case 'toggle': togglePlay(); break;
     case 'next': next(true); break;
     case 'prev': prev(); break;
     case 'shuffle': {
@@ -935,6 +977,13 @@ document.addEventListener('click', async (e) => {
         else if (b.dataset.m === 'app-logs') window.bloomee.openLogs();
         else if (b.dataset.m === 'app-exit') window.bloomee.quit();
       });
+      break;
+    }
+    case 'quality': {
+      await libOp('setSetting', { key: 'quality', value: el.dataset.q });
+      S.lib.settings.quality = el.dataset.q;
+      toast(`Quality: ${el.textContent} — agle gaane se lagu`);
+      if (S.view.kind === 'settings') pageSettings($('#view'));
       break;
     }
     case 'toggle-tray': {
@@ -1053,7 +1102,7 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   if (typing) return;
-  if (e.code === 'Space') { e.preventDefault(); if (S.current) audio.paused ? audio.play() : audio.pause(); }
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
   else if (e.ctrlKey && e.key.toLowerCase() === 'l') { e.preventDefault(); searchInput.focus(); searchInput.select(); }
   else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'q') { window.bloomee.quit(); }
   else if (e.key === 'ArrowRight' && e.shiftKey) next(true);
@@ -1073,7 +1122,7 @@ window.bloomee.onUpdate((d) => {
   if (S.view.kind === 'settings') pageSettings($('#view'));
 });
 window.bloomee.playerCmd((cmd) => {
-  if (cmd === 'toggle' && S.current) audio.paused ? audio.play() : audio.pause();
+  if (cmd === 'toggle') togglePlay();
   else if (cmd === 'next') next(true);
   else if (cmd === 'prev') prev();
 });
@@ -1087,7 +1136,15 @@ window.bloomee.win.onMaxChanged((max) => { $('#win-max').innerHTML = `<svg class
   setVolUI(audio.volume);
   $('#btn-shuffle').classList.toggle('on', !!S.lib.settings.shuffle);
   paintRepeat();
-  if (S.lib.lastTrack) {
+  /* restart restore: poori queue wapas (warna sirf last track) */
+  const lq = S.lib.settings.lastQueue;
+  if (lq?.items?.length) {
+    S.queue = lq.items;
+    S.queueIdx = Math.min(Math.max(0, lq.idx || 0), lq.items.length - 1);
+    S.current = S.queue[S.queueIdx];
+    regTracks(S.queue);
+    renderNpLeft();
+  } else if (S.lib.lastTrack) {
     S.current = S.lib.lastTrack;
     S.queue = [S.lib.lastTrack];
     S.queueIdx = 0;

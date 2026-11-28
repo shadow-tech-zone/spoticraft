@@ -59,7 +59,7 @@ jobs:
           set +e
           (cd app && BLOOMEE_SHOTS=1 xvfb-run -a npx electron . --no-sandbox --disable-gpu > ../shots-out.txt 2>&1)
           mkdir -p test/results/shots
-          cp app/home.png app/detail.png app/search.png app/playing.png app/queue.png app/now.png app/lyrics.png test/results/shots/ 2>/dev/null || tail -5 shots-out.txt
+          for f in home detail search playing queue now lyrics charts fslyrics; do cp "app/$f.png" "test/results/shots/$f.png" 2>/dev/null || echo "missing $f.png"; done
           grep -E "PAGE>|PLAY_STATE|ROW_PT|SHOT" shots-out.txt > test/results/shots-log.txt || true
 
       - name: Commit results

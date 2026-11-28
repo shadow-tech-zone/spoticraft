@@ -148,6 +148,14 @@ async function runShots(w) {
     await exec(`document.querySelector('[data-tab="lyrics"]')?.click()`);
     await waitFor('.lyr-line', 40);
     await shot('lyrics.png', 1800);
+    /* charts page */
+    await exec(`document.querySelector('#nav-charts')?.click()`);
+    await waitFor('.card', 30);
+    await shot('charts.png');
+    /* fullscreen lyrics */
+    await exec(`document.querySelector('[data-act="fs-lyrics"]')?.click()`);
+    await waitFor('.fs-line', 24);
+    await shot('fslyrics.png', 1600);
     console.log('SHOTS_OK');
   } catch (e) { console.log('SHOTS_FAIL ' + (e?.message || e)); }
   app.exit(0);

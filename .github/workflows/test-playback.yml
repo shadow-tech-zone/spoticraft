@@ -51,12 +51,19 @@ jobs:
           echo "----- SMOKE -----"
           cat test/results/smoke.txt
 
+      - name: UI screenshot report (QA)
+        run: |
+          set +e
+          (cd app && BLOOMEE_SHOTS=1 xvfb-run -a npx electron . --no-sandbox --disable-gpu > ../shots-out.txt 2>&1)
+          mkdir -p test/results/shots
+          cp app/shots-home.png test/results/shots/home.png 2>/dev/null || tail -5 shots-out.txt
+
       - name: Commit results
         if: always()
         run: |
           git config user.name "bloomee-ci"
           git config user.email "ci@bloomee.local"
-          git add test/results/latest.txt test/results/yt-debug.txt test/results/rescue.txt test/results/smoke.txt
+          git add test/results/latest.txt test/results/yt-debug.txt test/results/rescue.txt test/results/smoke.txt test/results/shots
           git commit -m "test results [skip ci]" || echo "nothing new"
           git pull --rebase origin arena/09cac133-spoticraft || true
           git push origin HEAD:arena/09cac133-spoticraft

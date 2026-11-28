@@ -1,7 +1,7 @@
 name: Build Windows App
 
-# Is branch par push hote hi Windows installer + portable EXE banta hai.
-# Download: Actions tab → is run → Artifacts → Bloomee-Windows.
+# QA GATE: pehle ubuntu par live tests (resolver + Electron smoke),
+# pass hon tab hi Windows build + release. Fail = koi product nahi.
 on:
   push:
     branches:
@@ -12,7 +12,30 @@ permissions:
   contents: write
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Stream resolver test (live)
+        run: node test/rescue.e2e.mjs
+
+      - name: Electron smoke (asal app mein gaana play)
+        working-directory: app
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgtk-3-0 libnss3 libasound2t64 > /dev/null 2>&1
+          npm install --no-audit --no-fund > /dev/null 2>&1
+          BLOOMEE_SMOKE=1 xvfb-run -a npx electron . --no-sandbox --disable-gpu > /tmp/smoke.txt 2>&1 || true
+          grep SMOKE_RESULT /tmp/smoke.txt | tail -1
+          grep -q '"ok":true' /tmp/smoke.txt
+
   build:
+    needs: test
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4

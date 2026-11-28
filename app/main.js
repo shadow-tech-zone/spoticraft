@@ -14,6 +14,7 @@ import { resolveStreams } from './core/resolve.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = !app.isPackaged;
 const SMOKE = !!process.env.BLOOMEE_SMOKE;
+const SHOTS = !!process.env.BLOOMEE_SHOTS;
 if (SMOKE) app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 /* ── log: userData/bloomee.log ── */
@@ -88,8 +89,25 @@ function createWindow() {
     }
   });
   win.on('closed', () => { win = null; });
-  if (isDev && !SMOKE) win.webContents.openDevTools({ mode: 'detach' });
+  if (isDev && !SMOKE && !SHOTS) win.webContents.openDevTools({ mode: 'detach' });
   if (SMOKE) win.webContents.once('did-finish-load', () => setTimeout(() => runSmoke(win), 600));
+  if (SHOTS) win.webContents.once('did-finish-load', () => runShots(win));
+}
+
+/* ── QA screenshot report: home data load ka intezaar, phir photo ── */
+async function runShots(w) {
+  try {
+    for (let i = 0; i < 44; i++) {
+      const n = await w.webContents.executeJavaScript("document.querySelectorAll('.card,.trow').length").catch(() => 0);
+      if (n > 3) break;
+      await new Promise(r => setTimeout(r, 500));
+    }
+    await new Promise(r => setTimeout(r, 1500));
+    const img = await w.webContents.capturePage();
+    fs.writeFileSync(path.join(process.cwd(), 'shots-home.png'), img.toPNG());
+    console.log('SHOTS_OK');
+  } catch (e) { console.log('SHOTS_FAIL ' + (e?.message || e)); }
+  app.exit(0);
 }
 
 /* ── CI smoke test: asal app + asal IPC + asal Chromium <audio> ──

@@ -10,8 +10,13 @@ try {
   if (l && (l.plain || l.synced?.length)) {
     console.log(`  ✓ lyrics mile: source=${l.source} synced=${l.synced?.length || 0} lines, plain=${l.plain ? l.plain.length + ' chars' : 'nahi'}`);
     if (l.synced?.length) {
-      console.log(`  ✓ pehli synced line [${l.synced[0].t}s]: "${l.synced[0].text}"`);
-      console.log(`  ✓ aakhri synced line [${l.synced[l.synced.length - 1].t}s]: "${l.synced[l.synced.length - 1].text}"`);
+      console.log(`  ✓ pehli synced line [${(l.synced[0].timeMs / 1000).toFixed(1)}s]: "${l.synced[0].text}"`);
+      const withText = l.synced.filter(x => x.text);
+      console.log(`  ✓ aakhri synced line [${(withText[withText.length - 1].timeMs / 1000).toFixed(1)}s]: "${withText[withText.length - 1].text}"`);
+    }
+    /* shape guard: renderer timeMs (number) par chalta hai */
+    if (l.synced?.length && !l.synced.every(x => typeof x.timeMs === 'number')) {
+      failures++; console.log('  ✗ synced lines mein timeMs number nahi hai — renderer tootega');
     }
   } else { failures++; console.log('  ✗ lyrics nahi mile (null)'); }
 } catch (e) { failures++; console.log(`  ✗ lyrics error: ${e.message}`); }

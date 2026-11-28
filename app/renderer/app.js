@@ -609,7 +609,7 @@ function renderLyricsPanel() {
   if (!t) { body.innerHTML = '<div class="center-msg"><h2>Pehle gaana chalao</h2></div>'; return; }
   if (!S.lyrics) { body.innerHTML = '<div class="center-msg"><h2>Lyrics dhoondh rahe hain…</h2></div>'; ensureLyrics(); return; }
   if (S.lyrics.synced?.length) {
-    body.innerHTML = S.lyrics.synced.map((l, i) => `<div class="lyr-line" data-act="seek-lyr" data-t="${l.t}" data-i="${i}">${esc(l.text || '♪')}</div>`).join('');
+    body.innerHTML = S.lyrics.synced.map((l, i) => `<div class="lyr-line" data-act="seek-lyr" data-t="${(l.timeMs || 0) / 1000}" data-i="${i}">${esc(l.text || '♪')}</div>`).join('');
     syncLyricsUI();
   } else if (S.lyrics.plain) {
     body.innerHTML = S.lyrics.plain.split('\n').map(l => `<div class="lyr-line on" style="cursor:default">${esc(l) || '&nbsp;'}</div>`).join('');
@@ -622,7 +622,7 @@ function syncLyricsUI() {
   if (!lines?.length) return;
   const now = audio.currentTime;
   let idx = -1;
-  for (let i = 0; i < lines.length; i++) { if (lines[i].t <= now) idx = i; else break; }
+  for (let i = 0; i < lines.length; i++) { if ((lines[i].timeMs || 0) / 1000 <= now) idx = i; else break; }
   paintSync($$('.lyr-line'), $$('.fs-line'), idx);
 }
 function paintSync(rpEls, fsEls, idx) {
@@ -646,7 +646,7 @@ function renderFsLyrics() {
       <div class="fs-title">${esc(t.title)}</div><div class="fs-artist">${esc(artistsText(t))}</div>
       <button class="btn" data-act="fs-close" style="margin-top:20px">✕ Band karo (Esc)</button></div>
     <div class="fs-lines">${lines?.length
-      ? lines.map((l, i) => `<div class="fs-line" data-act="seek-lyr" data-t="${l.t}" data-i="${i}">${esc(l.text || '♪')}</div>`).join('')
+      ? lines.map((l, i) => `<div class="fs-line" data-act="seek-lyr" data-t="${(l.timeMs || 0) / 1000}" data-i="${i}">${esc(l.text || '♪')}</div>`).join('')
       : `<div class="fs-line on">${S.lyrics?.plain ? esc(S.lyrics.plain).replace(/\n/g, '<br>') : 'Lyrics nahi milay'}</div>`}</div>`;
   syncLyricsUI();
 }

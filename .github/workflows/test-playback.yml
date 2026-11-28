@@ -4,6 +4,7 @@ name: Live Playback Test
 # Sandbox se music sites + Actions logs dono block hain, is liye
 # result repo mein file commit hota hai (test/results/latest.txt).
 on:
+  workflow_dispatch:
   push:
     branches:
       - arena/09cac133-spoticraft

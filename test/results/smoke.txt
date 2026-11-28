@@ -1,1 +1,1 @@
-{"saavn":{"title":"Tu Mil Jaaye (From \"KING\")","via":"jiosaavn","duration":315,"t0":0,"t1":3.45,"paused":false},"ytm":{"title":"Ilahi","via":"jiosaavn-fallback","duration":229,"t0":0,"t1":3.42,"paused":false},"lyrics":{"found":true,"syncedLines":66},"ok":true}
+{"saavn":{"title":"Tu Mil Jaaye (From \"KING\")","via":"jiosaavn","duration":315,"t0":0,"t1":3.45,"paused":false},"ytm":{"title":"Ilahi","via":"jiosaavn-fallback","duration":229,"t0":0,"t1":3.43,"paused":false},"lyrics":{"found":true,"syncedLines":66},"ok":true}

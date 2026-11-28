@@ -37,5 +37,5 @@ tracks=10 albums=4 playlists=6 artists=6
 first track: ytmusic::lSPNH_rYKIg Ilahi
 
 ── known video stream test (dQw4w9WgXcQ) ──
-streams=5 top=137kbps rr1---sn-p5qs7nd7.googlevideo.com
+streams=5 top=137kbps rr3---sn-nx5e6nle.googlevideo.com
 bytes: HTTP 206 type=audio/webm n=1024

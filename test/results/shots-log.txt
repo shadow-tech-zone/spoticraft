@@ -2,8 +2,7 @@ SHOT home.png
 SHOT detail.png
 SHOT search.png
 ROW_PT {"x":779,"y":184}
-PAGE> Uncaught (in promise) SyntaxError: Unexpected token '&', "[&quot;jios"... is not valid JSON
-PLAY_STATE ""
+PLAY_STATE "Tu Mil Jaaye (From \"KING\")Sachin-Jigar, Ed Sheeran, Kumaar, Arijit Singh, Madhub"
 SHOT playing.png
 SHOT queue.png
 SHOT now.png

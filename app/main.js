@@ -94,17 +94,35 @@ function createWindow() {
   if (SHOTS) win.webContents.once('did-finish-load', () => runShots(win));
 }
 
-/* ── QA screenshot report: home data load ka intezaar, phir photo ── */
+/* ── QA screenshot report: Home → Detail → Search, teeno pages ki
+   photos taake UI review aankh se ho sakay (andha fix nahi) ── */
 async function runShots(w) {
-  try {
-    for (let i = 0; i < 44; i++) {
-      const n = await w.webContents.executeJavaScript("document.querySelectorAll('.card,.trow').length").catch(() => 0);
-      if (n > 3) break;
-      await new Promise(r => setTimeout(r, 500));
+  const exec = (code) => w.webContents.executeJavaScript(code).catch(() => 0);
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const waitFor = async (sel, tries = 44) => {
+    for (let i = 0; i < tries; i++) {
+      if (await exec(`document.querySelectorAll('${sel}').length`) > 0) return true;
+      await sleep(500);
     }
-    await new Promise(r => setTimeout(r, 1500));
+    return false;
+  };
+  const shot = async (name, settle = 1400) => {
+    await sleep(settle);
     const img = await w.webContents.capturePage();
-    fs.writeFileSync(path.join(process.cwd(), 'shots-home.png'), img.toPNG());
+    fs.writeFileSync(path.join(process.cwd(), name), img.toPNG());
+    console.log('SHOT', name);
+  };
+  try {
+    await waitFor('.card,.trow');
+    await shot('shots-home.png');
+    /* pehla card kholo → detail page */
+    await exec(`document.querySelector('.card')?.click()`);
+    await waitFor('#hero,.trow');
+    await shot('shots-detail.png');
+    /* search page */
+    await exec(`(function(){const i=document.querySelector('#search'); i.focus(); i.value='Arijit Singh'; i.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));})()`);
+    await waitFor('.trow,.card');
+    await shot('shots-search.png');
     console.log('SHOTS_OK');
   } catch (e) { console.log('SHOTS_FAIL ' + (e?.message || e)); }
   app.exit(0);

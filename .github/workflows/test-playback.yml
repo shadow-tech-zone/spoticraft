@@ -57,6 +57,8 @@ jobs:
           (cd app && BLOOMEE_SHOTS=1 xvfb-run -a npx electron . --no-sandbox --disable-gpu > ../shots-out.txt 2>&1)
           mkdir -p test/results/shots
           cp app/shots-home.png test/results/shots/home.png 2>/dev/null || tail -5 shots-out.txt
+          cp app/shots-detail.png test/results/shots/detail.png 2>/dev/null || true
+          cp app/shots-search.png test/results/shots/search.png 2>/dev/null || true
 
       - name: Commit results
         if: always()

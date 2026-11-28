@@ -313,3 +313,30 @@ img { display: block; }
 .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; }
 .switch.on { background: var(--green); }
 .switch.on::after { left: 21px; }
+
+/* ══ SVG icons (har OS par ek-si look — font glyphs nahi) ══ */
+.ic { width: 20px; height: 20px; fill: currentColor; display: block; flex: none; }
+.ic-sm { width: 15px; height: 15px; }
+.ic-xs { width: 11px; height: 11px; }
+.logo-mark .ic { width: 13px; height: 13px; }
+.navbtn .ic { width: 19px; height: 19px; }
+.nv-ic { display: grid; place-items: center; }
+.nv-ic .ic { width: 21px; height: 21px; }
+.winbtn { display: grid; place-items: center; }
+.tbtn { display: grid; place-items: center; }
+.tbtn .ic { width: 21px; height: 21px; }
+.playbtn .ic { width: 17px; height: 17px; margin-left: 1px; }
+.fab .ic { width: 17px; height: 17px; margin-left: 1px; }
+.playfab .ic { width: 23px; height: 23px; margin-left: 2px; }
+.sticky-head .playfab .ic { width: 18px; height: 18px; }
+.like-btn { display: grid; place-items: center; }
+.like-btn .ic { width: 17px; height: 17px; }
+.lr-tile.liked .ic { width: 18px; height: 18px; }
+.h-tile.liked .ic { width: 56px; height: 56px; }
+.search-ic .ic { width: 17px; height: 17px; }
+.suggest .sg-ic { display: grid; place-items: center; }
+.suggest .sg-ic .ic { width: 15px; height: 15px; }
+.vol-ic { display: grid; place-items: center; color: var(--t-sub); }
+.vol-ic .ic { width: 19px; height: 19px; }
+.qrow .x { display: grid; place-items: center; }
+.qrow .x .ic { width: 13px; height: 13px; }

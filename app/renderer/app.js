@@ -6,6 +6,24 @@ const esc = (s = '') => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;'
 const artistsText = (t) => (t.artists || []).map(a => a.name).join(', ');
 /* core model artwork ko {url} object deta hai — yahan string banao */
 const artUrl = (o) => { const a = o?.artwork; return (typeof a === 'string' ? a : a?.url) || null; };
+
+/* SVG icons — har OS par ek-si look (font/emoji glyphs istimal nahi) */
+const PATHS = {
+  play: 'M8 5v14l11-7z',
+  pause: 'M6 5h4v14H6zM14 5h4v14h-4z',
+  heart: 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z',
+  heartOutline: 'M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z',
+  search: 'M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z',
+  repeat: 'M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z',
+  repeatOne: 'M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4zm-4-2V9h-1l-2 1v1h1.5v4H13z',
+  vol: 'M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z',
+  volMute: 'M3 9v6h4l5 5V4L7 9H3zm14.6 3 2.5-2.5-1.4-1.4-2.5 2.5-2.5-2.5-1.4 1.4 2.5 2.5-2.5 2.5 1.4 1.4 2.5-2.5 2.5 2.5 1.4-1.4-2.5-2.5z',
+  maximize: 'M5 5h14v14H5V5zm2 2v10h10V7H7z',
+  restore: 'M8 8h12v12H8V8zm2 2v8h8v-8h-8zM16 4H4v12h2V6h10V4z',
+  close: 'M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
+};
+const ic = (n) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path ${n === 'maximize' || n === 'restore' ? 'fill-rule="evenodd" ' : ''}d="${PATHS[n]}"/></svg>`;
+const heartIc = (on) => ic(on ? 'heart' : 'heartOutline');
 const fmt = (ms) => { if (!ms && ms !== 0) return '0:00'; const s = Math.max(0, Math.round(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 
 const api = {};
@@ -51,7 +69,7 @@ function refreshLikeUI(id) {
   $$(`[data-like="${CSS.escape(id)}"]`).forEach(b => {
     const on = isLiked(id);
     b.classList.toggle('liked', on);
-    b.textContent = on ? '♥' : '♡';
+    b.innerHTML = heartIc(on);
   });
   if (S.current?.id === id) renderNpLeft();
 }
@@ -114,7 +132,7 @@ function cardHTML(item) {
     : (item.subtitle || 'Artist');
   return `<button class="card ${item.kind === 'artist' ? 'round' : ''}" data-act="open-item" data-kind="${item.kind}" data-id="${esc(item.id)}" data-menu-item='${esc(JSON.stringify(item))}'>
     <div class="c-art">${coverImg(item)}
-      <span class="fab ${playingThis ? 'show' : ''}" data-act="card-play" data-id="${esc(item.id)}">${playingThis && !audio.paused ? '❚❚' : '▶'}</span>
+      <span class="fab ${playingThis ? 'show' : ''}" data-act="card-play" data-id="${esc(item.id)}">${ic(playingThis && !audio.paused ? 'pause' : 'play')}</span>
     </div>
     <div class="c-title">${esc(item.title || item.name)}</div>
     <div class="c-sub">${esc(subtitle)}</div>
@@ -130,7 +148,7 @@ function rowHTML(t, idx, ctxJson) {
       <div class="t-artist">${esc(artistsText(t))}</div></div></div>
     <div class="t-album">${esc(t.album?.title || '')}</div>
     <div class="t-end">
-      <button class="like-btn ${isLiked(t.id) ? 'liked' : ''}" data-act="like" data-like="${esc(t.id)}" title="Like">${isLiked(t.id) ? '♥' : '♡'}</button>
+      <button class="like-btn ${isLiked(t.id) ? 'liked' : ''}" data-act="like" data-like="${esc(t.id)}" title="Like">${heartIc(isLiked(t.id))}</button>
       <span>${fmt(t.durationMs)}</span>
       <button class="like-btn" data-act="row-menu" data-id="${esc(t.id)}" title="More">•••</button>
     </div>
@@ -152,7 +170,7 @@ function renderSidebar() {
   $('#nav-charts').classList.toggle('active', v.kind === 'charts');
   const items = [
     `<button class="librow ${v.kind === 'liked' ? 'active' : ''}" data-act="go-liked">
-       <span class="lr-tile liked">♥</span>
+       <span class="lr-tile liked">${ic('heart')}</span>
        <span class="lr-mid"><div class="lr-title">Liked Songs</div><div class="lr-sub">${S.lib.liked.length} songs</div></span>
      </button>`,
     ...S.lib.playlists.map(p => `<button class="librow ${v.kind === 'local' && v.id === p.id ? 'active' : ''}" data-act="open-local" data-id="${esc(p.id)}" data-menu-local="${esc(p.id)}">
@@ -240,7 +258,7 @@ async function pageSearch(el) {
 
 function heroHTML({ kind, title, meta, artwork, likedTile }) {
   return `<div class="hero" id="hero">
-      ${likedTile ? '<div class="h-tile liked">♥</div>' : (artwork
+      ${likedTile ? `<div class="h-tile liked">${ic('heart')}</div>` : (artwork
         ? `<img id="hero-img" src="${esc(artwork)}" alt="" data-fb="h-tile" data-ch="${esc((title || '?').slice(0, 1))}">`
         : `<div class="h-tile">${esc((title || '?').slice(0, 1))}</div>`)}
       <div><div class="h-kind">${esc(kind)}</div><div class="h-title">${esc(title)}</div><div class="h-meta">${esc(meta)}</div></div>
@@ -248,7 +266,7 @@ function heroHTML({ kind, title, meta, artwork, likedTile }) {
     <div class="sticky-head" id="sticky-head">
       ${artwork ? `<img src="${esc(artwork)}" alt="">` : ''}
       <span class="sh-title">${esc(title)}</span>
-      <button class="playfab" data-act="hero-play" style="width:46px;height:46px;font-size:15px">▶</button>
+      <button class="playfab" data-act="hero-play" style="width:46px;height:46px">${ic('play')}</button>
     </div>`;
 }
 function applyHeroTint() {
@@ -289,7 +307,7 @@ async function pageList(el, v) {
     ? `${d.year ? d.year + ' • ' : ''}${artistsText(d)} • ${tracks.length} songs`
     : `${d.author || (v.isChart ? 'Chart' : 'Playlist')} • ${tracks.length} songs`;
   el.innerHTML = heroHTML({ kind: v.isAlbum ? 'Album' : 'Playlist', title: d.title, meta, artwork: artUrl(d) })
-    + `<div class="actions"><button class="playfab" data-act="hero-play">▶</button></div>`
+    + `<div class="actions"><button class="playfab" data-act="hero-play">${ic('play')}</button></div>`
     + colHead + rowsHTML(tracks);
   applyHeroTint();
 
@@ -307,7 +325,7 @@ async function pageArtist(el, v) {
   const tops = d.topTracks || d.tracks || [];
   const albums = d.albums || [];
   el.innerHTML = heroHTML({ kind: 'Artist', title: d.name, meta: d.subtitle || 'Artist', artwork: artUrl(d) })
-    + `<div class="actions"><button class="playfab" data-act="hero-play">▶</button></div>`
+    + `<div class="actions"><button class="playfab" data-act="hero-play">${ic('play')}</button></div>`
     + (tops.length ? `<h2 class="sec-title">Popular</h2>${rowsHTML(tops)}` : '')
     + (albums.length ? `<h2 class="sec-title">Albums</h2><div class="cards">${albums.map(cardHTML).join('')}</div>` : '')
     + (d.bio ? `<h2 class="sec-title">About</h2><div class="about-box">${esc(d.bio)}</div>` : '');
@@ -318,7 +336,7 @@ async function pageArtist(el, v) {
 function pageLocalList(el, title, tracks, opts) {
   const likedTile = !!opts.liked;
   el.innerHTML = heroHTML({ kind: 'Playlist', title, meta: `${tracks.length} songs`, artwork: !likedTile && artUrl(tracks[0]), likedTile })
-    + `<div class="actions"><button class="playfab" data-act="hero-play">▶</button>
+    + `<div class="actions"><button class="playfab" data-act="hero-play">${ic('play')}</button>
        ${opts.localId ? `<button class="iconbtn" data-act="local-menu" data-id="${esc(opts.localId)}" title="More">•••</button>` : ''}</div>`
     + colHead
     + (tracks.length ? rowsHTML(tracks)
@@ -484,8 +502,8 @@ function renderNpLeft() {
   if (!t) { el.innerHTML = ''; return; }
   el.innerHTML = `${artUrl(t) ? `<img src="${esc(artUrl(t))}" alt="" data-fb="np-tile" data-ch="${esc(t.title.slice(0, 1))}">` : `<div class="np-tile">${esc(t.title.slice(0, 1))}</div>`}
     <div style="min-width:0"><div class="np-title">${esc(t.title)}</div><div class="np-artist">${esc(artistsText(t))}</div></div>
-    <button class="like-btn ${isLiked(t.id) ? 'liked' : ''}" style="opacity:1" data-act="like-cur" data-like="${esc(t.id)}">${isLiked(t.id) ? '♥' : '♡'}</button>`;
-  $('#btn-play').textContent = audio.paused ? '▶' : '❚❚';
+    <button class="like-btn ${isLiked(t.id) ? 'liked' : ''}" style="opacity:1" data-act="like-cur" data-like="${esc(t.id)}">${heartIc(isLiked(t.id))}</button>`;
+  paintPlayBtn();
   renderQueuePanel();
 }
 function repaintPlayingRows() {
@@ -499,10 +517,10 @@ function repaintPlayingRows() {
   $$('.card .fab').forEach(f => {
     const on = S.current?.id === f.dataset.id;
     f.classList.toggle('show', on);
-    if (on) f.textContent = audio.paused ? '▶' : '❚❚';
+    if (on) f.innerHTML = ic(audio.paused ? 'play' : 'pause');
   });
 }
-function setVolUI(v) { const el = $('#vol'); if (el) el.style.setProperty('--p', v); $('#vol-ic').textContent = v === 0 ? '🔇' : v < 0.5 ? '🔉' : '🔊'; }
+function setVolUI(v) { const el = $('#vol'); if (el) el.style.setProperty('--p', v); $('#vol-ic').innerHTML = ic(v === 0 ? 'volMute' : 'vol'); }
 
 /* ════════════ right panel: queue + lyrics ════════════ */
 function openRp(tab) {
@@ -530,7 +548,7 @@ function renderQueuePanel() {
   const qrow = (t, mode, i) => `<div class="qrow" data-act="${mode === 'now' ? 'q-now' : mode === 'up' ? 'up-play' : 'q-play'}" data-mode="${mode}" data-i="${i}" data-menu-track="${esc(t.id)}">
       ${artUrl(t) ? `<img src="${esc(artUrl(t))}" alt="" data-fb="q-tile" data-ch="${esc(t.title.slice(0, 1))}">` : `<div class="q-tile">${esc(t.title.slice(0, 1))}</div>`}
       <div style="min-width:0"><div class="q-title" ${mode === 'now' ? 'style="color:var(--green)"' : ''}>${esc(t.title)}</div><div class="q-artist">${esc(artistsText(t))}</div></div>
-      ${mode !== 'now' ? `<button class="x" data-act="q-del" data-mode="${mode}" data-i="${i}" title="Remove">✕</button>` : ''}
+      ${mode !== 'now' ? `<button class="x" data-act="q-del" data-mode="${mode}" data-i="${i}" title="Remove">${ic('close')}</button>` : ''}
     </div>`;
   let html = '';
   if (cur) html += `<div class="rp-sec">Now playing</div>${qrow(cur, 'now', S.queueIdx)}`;
@@ -694,8 +712,9 @@ const volEl = bindSlider($('#vol'), () => audio.volume,
   p => { audio.volume = p; setVolUI(p); libOp('setSetting', { key: 'volume', value: p }); });
 
 /* ════════════ audio events ════════════ */
-audio.addEventListener('play', () => { S.skipCount = 0; $('#btn-play').textContent = '❚❚'; repaintPlayingRows(); syncPlayState(); });
-audio.addEventListener('pause', () => { $('#btn-play').textContent = '▶'; repaintPlayingRows(); syncPlayState(); });
+function paintPlayBtn() { const b = $('#btn-play'); if (b) b.innerHTML = ic(audio.paused ? 'play' : 'pause'); }
+audio.addEventListener('play', () => { S.skipCount = 0; paintPlayBtn(); repaintPlayingRows(); syncPlayState(); });
+audio.addEventListener('pause', () => { paintPlayBtn(); repaintPlayingRows(); syncPlayState(); });
 audio.addEventListener('ended', () => next(false));
 audio.addEventListener('error', () => { if (S.current && audio.src) maybeSkip('audioErr'); });
 audio.addEventListener('timeupdate', () => {
@@ -950,7 +969,7 @@ function paintRepeat() {
   const b = $('#btn-repeat');
   const on = S.lib.settings.repeat !== 'off';
   b.classList.toggle('on', on);
-  b.textContent = S.lib.settings.repeat === 'one' ? '⤸¹' : '⤸';
+  b.innerHTML = ic(S.lib.settings.repeat === 'one' ? 'repeatOne' : 'repeat');
 }
 
 /* ════════════ search / suggestions ════════════ */
@@ -967,7 +986,7 @@ searchInput.addEventListener('input', () => {
       const items = await api.suggestions(S.source, q);
       const box = $('#suggest');
       if (!items?.length || document.activeElement !== searchInput) return;
-      box.innerHTML = items.map(s => `<button data-act="suggest" data-q="${esc(s)}"><span class="sg-ic">⌕</span>${esc(s)}</button>`).join('');
+      box.innerHTML = items.map(s => `<button data-act="suggest" data-q="${esc(s)}"><span class="sg-ic">${ic('search')}</span>${esc(s)}</button>`).join('');
       box.classList.remove('hidden');
       box.querySelectorAll('[data-act="suggest"]').forEach(b => b.onclick = () => {
         searchInput.value = b.dataset.q;
@@ -1019,7 +1038,7 @@ window.bloomee.playerCmd((cmd) => {
   else if (cmd === 'next') next(true);
   else if (cmd === 'prev') prev();
 });
-window.bloomee.win.onMaxChanged((max) => { $('#win-max').textContent = max ? '❐' : '□'; });
+window.bloomee.win.onMaxChanged((max) => { $('#win-max').innerHTML = `<svg class="ic ic-xs" viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PATHS[max ? 'restore' : 'maximize']}"/></svg>`; });
 
 /* ════════════ boot ════════════ */
 (async function boot() {

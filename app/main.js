@@ -75,6 +75,10 @@ function createWindow() {
       contextIsolation: true, sandbox: true, nodeIntegration: false,
     },
   });
+  if (SMOKE || SHOTS) {
+    /* QA modes mein page ki console main tak — warna andha test */
+    win.webContents.on('console-message', (_e, _lvl, msg) => console.log('PAGE>', String(msg).slice(0, 400)));
+  }
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
   win.once('ready-to-show', () => win.show());
   win.on('resize', () => {
@@ -123,9 +127,17 @@ async function runShots(w) {
     await exec(`(function(){const i=document.querySelector('#search'); i.focus(); i.value='Arijit Singh'; i.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));})()`);
     await waitFor('.trow,.card');
     await shot('search.png');
-    /* pehla gaana chalao → playback state wale panels */
-    await exec(`document.querySelector('.trow')?.click()`);
+    /* pehla gaana chalao → playback state wale panels.
+       Asal mouse event (sendInputEvent) — synthetic .click() par
+       bharosa nahi, user bhi mouse hi dabata hai. */
+    const pt = await exec(`(() => { const r = document.querySelector('.trow')?.getBoundingClientRect(); return r ? { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) } : null; })()`);
+    console.log('ROW_PT', JSON.stringify(pt));
+    if (pt) {
+      w.webContents.sendInputEvent({ type: 'mouseDown', x: pt.x, y: pt.y, button: 'left', clickCount: 1 });
+      w.webContents.sendInputEvent({ type: 'mouseUp', x: pt.x, y: pt.y, button: 'left', clickCount: 1 });
+    }
     await waitFor('#np-left .np-title', 30);
+    console.log('PLAY_STATE', JSON.stringify(await exec(`(document.querySelector('#np-left')?.textContent || '').trim().slice(0, 80)`)));
     await shot('playing.png', 2500);
     await exec(`document.querySelector('#btn-rp-queue')?.click()`);
     await waitFor('.qrow', 20);
